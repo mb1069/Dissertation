@@ -1,0 +1,8 @@
+out/dissertation.log
+*.lof
+*.log
+*.out
+out/dissertation.pdf
+out/dissertation.toc
+*.aux
+*.lot

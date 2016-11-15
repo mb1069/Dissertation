@@ -1,0 +1,15 @@
+\select@language {british}
+\contentsline {part}{\numberline {I}Preliminaries}{11}{part.1}
+\contentsline {chapter}{\numberline {1}Introduction}{13}{chapter.1}
+\contentsline {section}{\numberline {1.1}What is \textlatin {\LaTeX }?}{13}{section.1.1}
+\contentsline {section}{\numberline {1.2}Advantages of \textlatin {T\kern -.1667em\lower .5ex\hbox {E}\kern -.125emX\spacefactor \@m {}}}{14}{section.1.2}
+\contentsline {section}{\numberline {1.3}Advantages of \LaTeXe }{14}{section.1.3}
+\contentsline {section}{\numberline {1.4}Advantages of a programmable mark-up language}{14}{section.1.4}
+\contentsline {chapter}{\numberline {2}Useful references}{17}{chapter.2}
+\contentsline {section}{\numberline {2.1}Books}{17}{section.2.1}
+\contentsline {section}{\numberline {2.2}Papers}{17}{section.2.2}
+\contentsline {section}{\numberline {2.3}Web resources}{18}{section.2.3}
+\contentsline {section}{\numberline {2.4}Video}{19}{section.2.4}
+\contentsline {chapter}{\numberline {3}The \textlatin {\LaTeX }\ edit-process cycle}{21}{chapter.3}
+\contentsline {part}{\numberline {II}Concepts of \LaTeXe }{23}{part.2}
+\contentsline {chapter}{\numberline {4}The anatomy of a \LaTeXe \ source file}{25}{chapter.4}
