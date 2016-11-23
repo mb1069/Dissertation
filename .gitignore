@@ -1,0 +1,9 @@
+submission/
+*.aux
+*.auxlock
+*.bbl
+*.blg
+*.log
+*.out
+.idea/
+*.toc

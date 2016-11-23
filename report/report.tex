@@ -1,0 +1,40 @@
+\documentclass[authoryearcitations]{UoYCSproject}
+
+
+\author{Miguel D. Boland}
+\title{Genetic algorithms for indoor localisation}
+\date{\today}
+\supervisor{Jeremy L. Jacob}
+\MIP
+\wordcount{8832}
+
+% \includes{Appendices \ref{cha:usefulpackages}, \ref{cha:gotchas} and
+%   \ref{cha:deptfac}}
+
+
+\abstract{}
+
+
+\begin{document}
+\maketitle
+\listoffigures
+\listoftables
+
+
+\chapter{Introduction}
+\label{cha:Introduction}
+Indoor localisation is the process of locating an electronic device's orientation and position within the confines of an indoor environment, for the purpose of conducting a location-dependent activity. An autonomous robot's ability to locate itself is key to it's ability to navigate and interact with it's environment where accuracy or autonomy is required. 
+
+This proves to be a non-trivial problem due to the lack of reliability of odometers on electrical models, which are liable to cumulative errors in displacement measurement stemming from limited encoding resolution or sampling rate, in addition to variations over the surface travelled, or related wheel-slippage \cite{Borenstein1996-al}. Similarly, a talk by \citet{Sachs2010-pw} demonstrates the complexities of using accelerometers and gyroscopes for indoor positions, citing the variations in sensing errors due to temperature changes, magnetic disturbances or sharp accelerations. Finally, the lack of signaAs such, indoor localisation has been an active field of research in an effort to provide autonomous systems with an ability to maintain a given displacement, in addition to the ability to locate itself within a known environment. 
+
+The academic research into this field follows three paradigms. The first two of these involves the usage of either an ad-hoc wireless infrastructure or existing wireless infrastructure, paired with mathematical models to interpret the strength or angle of arrival of wireless signals into a pose and translation. An overview of this area of research is presented by \citet{Liu2007-in}, demonstrating a range of use of wireless technologies; his findings demonstrate the lack of a commercial wireless indoor localisation solution which is both low-cost, robust and accurate to within a a few centimetres. As such, these solutions may be unfeasible in environments requiring precise localising and manoeuvring, but could be applied in situations where further refinement could be provided by a user.
+
+Restricting the context of this dissertation to applications in robots 
+\chapter{Lit review}
+
+\cleardoublepage
+
+
+\bibliography{references}
+
+\end{document}
