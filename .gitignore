@@ -6,3 +6,11 @@ out/dissertation.pdf
 out/dissertation.toc
 *.aux
 *.lot
+submission/
+*.aux
+*.auxlock
+*.bbl
+*.blg
+.idea/
+*.toc
+
