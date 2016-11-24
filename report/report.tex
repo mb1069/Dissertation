@@ -1,5 +1,5 @@
 \documentclass[authoryearcitations]{UoYCSproject}
-
+\usepackage[parfill]{parskip}
 
 \author{Miguel D. Boland}
 \title{Genetic algorithms for indoor localisation}
@@ -16,9 +16,12 @@
 
 
 \begin{document}
+
 \maketitle
 \listoffigures
 \listoftables
+% \renewcommand*{\lstlistlistingname}{List of Listings}
+% \lstlistoflistings
 
 
 \chapter{Introduction}
@@ -29,12 +32,43 @@ This proves to be a non-trivial problem due to the lack of reliability of odomet
 
 The academic research into this field follows three paradigms. The first two of these involves the usage of either an ad-hoc wireless infrastructure or existing wireless infrastructure, paired with mathematical models to interpret the strength or angle of arrival of wireless signals into a pose and translation. An overview of this area of research is presented by \citet{Liu2007-in}, demonstrating a range of use of wireless technologies; his findings demonstrate the lack of a commercial wireless indoor localisation solution which is both low-cost, robust and accurate to within a a few centimetres. As such, these solutions may be unfeasible in environments requiring precise localising and manoeuvring, but could be applied in situations where further refinement could be provided by a user.
 
-Restricting the context of this dissertation to applications in robots 
+The most promising paradigm for an adaptable and infrastructure-free solution to indoor localisation revolve around the use of line-of-sight based solutions: these rely on various sensor technologies to map information obtained from a  $360^{\circ}$ scan to a known map of the environment. As this method relies entirely on the environment through which the robot is attempting to navigate, it should be capable of generating a more accurate and precise indoor localisation system at a reduced cost, without depending on the availability of an optional system; this could be well adapted to emergency situations, where existing electrical infrastructure is hampered yet accurate positioning is critical to the task at hand. 
+% TODO major issues with these methods (See plan)
+
+Restricting the context of this dissertation to applications in autonomous robots requiring accurate positional tracking, we can state that the scope of this project is to investigate the development of LIDAR (Light Detection And Ranging) based indoor localisation algorithms, and in particular the development of evolutionary algorithms for indoor positioning.
+
+The rest of this document is organised as follows: ...... 
 \chapter{Lit review}
 
+\section{Problem definition}
+
+\section{Use of sensor technologies}
+\section{Overview of data representation strategies}
+Why go with point-point?
+\section{Classical approaches}
+\subsection{ICP and variants}
+\subsection{IDC}
+\subsection{Principal Component Analysis}
+\subsection{Normal distribution transform}
+\subsection{Hausdorff distance}
+\subsection{Hough transform}
+\subsection{Cross-correlation scan matching}
+\subsection{Histogram scan matching}
+
+\section{Overview of genetic algorithms}
+\subsection{Intro to Genetic Algorithms}
+\subsection{General chromosome/fitness function design}
+\subsection{Genetic polar scan matching}
+\subsection{GLASM}
+\subsection{Dynamic GA}
+
+\section{GA-Classical methods}
+\subsection{GA ICP}
+\subsection{GA TrICP}
+\subsection{H-GLASM}
 \cleardoublepage
 
-
+\bibliographystyle{unsrt}
 \bibliography{references}
 
 \end{document}
