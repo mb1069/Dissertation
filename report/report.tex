@@ -22,6 +22,7 @@
 \listoftables
 % \renewcommand*{\lstlistlistingname}{List of Listings}
 % \lstlistoflistings
+ICP: Iterative Closest Point algorithm
 
 
 \chapter{Introduction}
@@ -48,9 +49,13 @@ A common problem description for 2-dimensional indoor localisation can be define
 
 
 \section{Overview of data representation strategies}
-Why go with point-point?
+Three major paradigms exist in the approaches to the data-representation involved when mapping data from a robot's sensors and environment map. This devolves into either feature recognition and matching, using a set of rules to define a feature from a set of points, or the use of a set of raw coordinates. Various approaches involve either mapping either points to points, points to features, or features to features. We have decided to focus this project on a point-point approach; this removes the need to define a criteria to recognise features, which may be insufficient to identify oddly shaped landmarks as key features for the localisation of the robot [CITATION NEEDED]. In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION]
+
 \section{Classical approaches}
-\subsection{ICP and variants}
+\subsection{Iterative Scan Matching and variants}
+The Iterative Closest Point algorithm (ICP) is one of the first, if not the fundamental starting point for the applications of heuristic algorithms to the matching of scanned data to environment maps within the context of indoor localisation. 
+
+First described in 
 \subsection{IDC}
 \subsection{Principal Component Analysis}
 \subsection{Normal distribution transform}
