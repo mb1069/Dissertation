@@ -45,10 +45,12 @@ A common problem description for 2-dimensional indoor localisation can be define
 
 
 \section{Use of sensor technologies}
-
+Starting with the selection of sensor type, we have opted to assume the use a laser range scanner, which can provide a set of data in the form of $(d, \theta)$ where d is the distance measured when pointing the sensor at an angle $\theta$ from the centreline of the robot. As the rotation and measurement of the sensor can be handled by a packaged, stand-alone hardware component, we can assume these will be performed within the manufacturer's specifications without need for additional implementation. This benefit is reflected in research by \citet{Lingemann2005-hm}, who finds benefits in the accuracy and processing speed of data obtained from laser range scanners in comparison to sonar, stereo-cameras and omnidirectional vision.
 
 \section{Overview of data representation strategies}
-Why go with point-point?
+Data representation plays an important role in the optimisation and robustness of 
+
+
 \section{Classical approaches}
 \subsection{ICP and variants}
 \subsection{IDC}
