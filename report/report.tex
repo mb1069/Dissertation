@@ -36,7 +36,7 @@ The academic research into this field follows three paradigms. The first two of 
 The most promising paradigm for an adaptable and infrastructure-free solution to indoor localisation revolve around the use of line-of-sight based solutions: these rely on various sensor technologies to map information obtained from a  $360^{\circ}$ scan to a known map of the environment. As this method relies entirely on the environment through which the robot is attempting to navigate, it should be capable of generating a more accurate and precise indoor localisation system at a reduced cost, without depending on the availability of an optional system; this could be well adapted to emergency situations, where existing electrical infrastructure is hampered yet accurate positioning is critical to the task at hand. 
 % TODO major issues with these methods (See plan)
 
-Restricting the context of this dissertation to applications in autonomous robots requiring accurate positional tracking, we can state that the scope of this project is to investigate the development of LIDAR (Light Detection And Ranging) based indoor localisation algorithms, and in particular the development of evolutionary algorithms for indoor positioning.
+Restricting the context of this dissertation to applications in autonomous robots requiring accurate positional tracking, we can state that the scope of this project is to investigate the development of infrastructure-free indoor localisation systems, and in particular the development of evolutionary algorithms for indoor positioning.
 
 The rest of this document is organised as follows: ...... 
 \chapter{Literature Review}
@@ -49,15 +49,19 @@ A common problem description for 2-dimensional indoor localisation can be define
 Starting with the selection of sensor type, we have opted to assume the use a laser range scanner, which can provide a set of data in the form of $(d, \theta)$ where d is the distance measured when pointing the sensor at an angle $\theta$ from the centreline of the robot. As the rotation and measurement of the sensor can be handled by a packaged, stand-alone hardware component, we can assume these will be performed within the manufacturer's specifications without need for additional implementation. This benefit is reflected in research by \citet{Lingemann2005-hm}, who finds benefits in the accuracy and processing speed of data obtained from laser range scanners in comparison to sonar, stereo-cameras and omnidirectional vision.
 
 \section{Overview of data representation strategies}
-Three major paradigms exist in the approaches to the data-representation involved when mapping data from a robot's sensors and environment map. This devolves into either feature recognition and matching, using a set of rules to define a feature from a set of points, or the use of a set of raw coordinates. Various approaches involve either mapping either points to points, points to features, or features to features. We have decided to focus this project on a point-point approach; this removes the need to define a criteria to recognise features, which may be insufficient to identify oddly shaped landmarks as key features for the localisation of the robot [CITATION NEEDED]. In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION]
+Three major paradigms exist in the approaches to the data-representation involved when mapping data from a robot's sensors and environment map. This devolves into either feature recognition and matching, using a set of rules to define a feature from a set of points, or the use of a set of raw coordinates. Various approaches involve either mapping either points to points, points to features, or features to features. We have decided to focus this project on a point-point approach; this removes the need to define a criteria to recognise features, which may be insufficient to identify oddly shaped landmarks as key features for the localisation of the robot [CITATION NEEDED]. 
+
+In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION] As such, the problem can be stated as finding an optimal alignment of a set of relative scanned coordinates to an absolute map of the environment. 
 
 \section{Classical approaches}
 \subsection{Iterative Scan Matching and variants}
 The Iterative Closest Point algorithm (ICP) is one of the first, if not the fundamental starting point for the applications of heuristic algorithms to the matching of scanned data to environment maps within the context of indoor localisation.
 
-In this point-point data representation, the algorithm aims to find an optimal transformation to apply to the scan which minimises the sum of the distances measured  of the point in the scan to their
+In this point-point data representation, the algorithm first detailed by \citet{Besl1992-pd} aims to find an optimal transformation to apply to the scan which minimises the sum of the distances measured of each scan-point to their closest point in the reference map. This can be pre-processed with the removal of points with no proximate matching point, and iteratively changing the solution tuple to minimise the error using the Newton or Lorentzian methods \cite{Munoz2005-gt}. Starting from an initial position and a scan of the environment from this position, the algorithm will converge to a local optimum alignment. 
 
-First described in 
+Many improvements have been suggested (20 736 variations according to \citet{Donoso2017-wp}), which aim to improve the convergence speed \cite{Donoso2017-wp} \cite{Simon1996-dl}, accuracy, 
+
+
 \subsection{IDC}
 \subsection{Principal Component Analysis}
 \subsection{Normal distribution transform}
