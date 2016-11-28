@@ -44,8 +44,7 @@ The rest of this document is organised as follows: ......
 \section{Problem definition}
 A common problem description for 2-dimensional indoor localisation can be defined as the search for a tuple $(x, y, \theta)$ which describes the location $x, y$ of the robot with relation to an origin, and a rotation $\theta$ from a particular orientation. This would be sufficient to solve localisation for a robot travelling on a linear plane, without consideration for changes in altitude relative to the plane.
 
-\section{Scan matching}
-What is the concept of scan matching?
+Within the domain of indoor localisation, this problem is applied to scan matching, where a partial set of data is placed within the larger set of data using a 3-tuple transformation to maximise the overlap of data.
 
 
 \section{Use of sensor technologies}
@@ -54,22 +53,35 @@ Starting with the selection of sensor type, we have opted to assume the use a la
 \section{Overview of data representation strategies}
 Three major paradigms exist in the approaches to the data-representation involved when mapping data from a robot's sensors and environment map. This devolves into either feature recognition and matching, using a set of rules to define a feature from a set of points, or the use of a set of raw coordinates. Various approaches involve either mapping either points to points, points to features, or features to features. We have decided to focus this project on a point-point approach; this removes the need to define a criteria to recognise features, which may be insufficient to identify oddly shaped landmarks as key features for the localisation of the robot [CITATION NEEDED]. 
 
-In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION] As such, the problem can be stated as finding an optimal alignment of a set of relative scanned coordinates to an absolute map of the environment. 
+In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; 
+
+this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION] As such, the problem can be stated as finding an optimal alignment of a set of relative scanned coordinates to an absolute map of the environment. 
 
 
 
 \section{Classical approaches}
-\subsection{Iterative Scan Matching and variants}
+\subsection{Iterative Closest Point and variants}
+
 The Iterative Closest Point algorithm (ICP) is one of the first, if not the fundamental starting point for the applications of heuristic algorithms to the matching of scanned data to environment maps within the context of indoor localisation.
 
 In this point-point data representation, the algorithm first detailed by \citet{Besl1992-pd} aims to find an optimal transformation to apply to the scan which minimises the sum of the distances measured of each scan-point to their closest point in the reference map. This can be pre-processed with the removal of points with no proximate matching point, and iteratively changing the solution tuple to minimise the error using the Newton or Lorentzian methods \cite{Munoz2005-gt}. Starting from an initial position and a scan of the environment from this position, the algorithm will converge to a local optimum alignment. 
 
 Many improvements have been suggested (20 736 variations according to \citet{Donoso2017-wp}), which aim to improve the convergence speed \cite{Donoso2017-wp} \cite{Simon1996-dl}, removal of points from the datasets which would reduce the optimality of the solution \cite{Weik1997-px} \cite{Masuda1996-av} or the precision metric used \cite{Eggert1997-ak}. As such it continues to be a strong area of research, and can prove to be an accurate and relatively quick solution to scan matching.
 
-However, ICP finds a local optimum from a hypothetical pose: this would inhibit the algorithm from finding a global position in a single run, and this is reflected by th
+However, ICP finds a local optimum from a hypothetical pose: this would inhibit the algorithm from finding a global position in a single run, and this is reflected by \citet{Censi2005-iv} who states that "any 'local' matcher can be (inefficiently) used for a global search". This could be implemented by randomising the starting pose over multiple runs, highlighting the additional complexity required to adapt this algorithm into a global search.
+
+Nevertheless it continues to be an area of continuous research, as \citet{Minguez2006-nj} developed a version of ICP in 2006 named mbICP;  this accounts for the issue that the distance of a scanned point from the sensor will be proportional to the translation error of that point due to a rotational error. This would therefore skew the error of the hypothetical translation, potentially driving it away from a local error minima.
+
+Similarly,TrICP \cite{Chetverikov2005-yz} implements a Trimmed Least Squares \cite{Ruppert1980-js} algorithm rather than a Least Squares, improving the robustness to noise or poor initial estimations of the pose.
+
+Finally, \citet{Donoso2017-wp} recently published a comprehensive  overview of 20,736 variants of the ICP algorithm in their ability to consolidate (and therefore place relative to each other) sets of 3 sets of 100 scans at distinct locations. He finds that the performance (precision, accuracy and computational efficiency) of ICP variants can significantly vary depending on the scan and map data, and that no single algorithm was able to adequately solve all 3 scenes in the experiment. As such, the selection of a particular variant of ICP may be significant to the effectiveness of scan matching, as we will later discuss in \ref{cha:gaClassical}.
 
 
-\subsection{IDC}
+\subsection{Iterative Dual Correspondence}
+
+The development of the IDC algorithm by \citet{Lu1997-zv} focused on the same issue in ICP for which mbICP was developed: distant points in a scan have a large matching error due to translation errors, relative to closer points. To solve this, 
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.43.4126&rep=rep1&type=pdf
+
 \subsection{Principal Component Analysis}
 \subsection{Normal distribution transform}
 \subsection{Hausdorff distance}
@@ -85,6 +97,7 @@ However, ICP finds a local optimum from a hypothetical pose: this would inhibit 
 \subsection{Dynamic GA}
 
 \section{GA-Classical methods}
+\label{cha:gaClassical}
 \subsection{GA ICP}
 \subsection{GA TrICP}
 \subsection{H-GLASM}
