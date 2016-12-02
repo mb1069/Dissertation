@@ -2,7 +2,7 @@
 \usepackage[parfill]{parskip}
 
 \author{Miguel D. Boland}
-\title{Genetic algorithms for indoor localisation}
+\title{evolutionary algorithms for indoor localisation}
 \date{\today}
 \supervisor{Jeremy L. Jacob}
 \MIP
@@ -23,6 +23,7 @@
 % \renewcommand*{\lstlistlistingname}{List of Listings}
 % \lstlistoflistings
 ICP: Iterative Closest Point algorithm
+NDT: Normal distribution transform
 
 
 \chapter{Introduction}
@@ -53,9 +54,7 @@ Starting with the selection of sensor type, we have opted to assume the use a la
 \section{Overview of data representation strategies}
 Three major paradigms exist in the approaches to the data-representation involved when mapping data from a robot's sensors and environment map. This devolves into either feature recognition and matching, using a set of rules to define a feature from a set of points, or the use of a set of raw coordinates. Various approaches involve either mapping either points to points, points to features, or features to features. We have decided to focus this project on a point-point approach; this removes the need to define a criteria to recognise features, which may be insufficient to identify oddly shaped landmarks as key features for the localisation of the robot [CITATION NEEDED]. 
 
-In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; 
-
-this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION] As such, the problem can be stated as finding an optimal alignment of a set of relative scanned coordinates to an absolute map of the environment. 
+In addition, we will assume that the computational complexity required for feature recognition will be roughly equivalent to the added complexity of matching sets of points; this will later be explored in the analysis of our solutions, and compared to leading feature-recognition solutions. [TODO IN LATER SECTION] As such, the problem can be stated as finding an optimal alignment of a set of relative scanned coordinates to an absolute map of the environment. 
 
 
 
@@ -79,18 +78,28 @@ Finally, \citet{Donoso2017-wp} recently published a comprehensive  overview of 2
 
 \subsection{Iterative Dual Correspondence}
 
-The development of the IDC algorithm by \citet{Lu1997-zv} focused on the same issue in ICP for which mbICP was developed: distant points in a scan have a large matching error due to translation errors, relative to closer points. To solve this, 
-http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.43.4126&rep=rep1&type=pdf
+The development of the IDC algorithm by \citet{Lu1997-zv} focused on the same issue in ICP for which mbICP was developed: distant points in a scan have a large matching error due to translation errors, relative to closer points. To solve this, IDC matches points in polar form. This results in a reduced computational complexity, as rather than search a 3-dimensional space, it solves an efficient one-dimensional search followed by a least squares solution. This is achieved by computing a trial value of the rotation from a global search on tangent directions from each scan, before executing a least-squares to affine the translation and rotation. This would have to be adapted for use in global localisation where the entirety of the map is not visible from a single scanning point due to range limitations, but does highlight some areas for improvement in ICP, both in terms of removing un-necessary data conversion and reducing the complexity of the algorithm. The method would also be difficult to apply to global localisation due to a lack of global search: an optimal minima would only be found if the initial error in rotation is relatively small (< 15$^o$).
+
+
+\subsection{Polar Scan Matching}
+
+Polar scan matching \citet{Albert_Diosi2005-iw} utilises the same idea as IDC by adapting the ICP algorithm to use polar coordinates in an effort of minimising computational requirements. After pre-processing each scan to remove inconsistent objects (due to moving objects) and segmenting the points according to a threshold criteria, the current scan is re-projected from the reference position, and the remaining translation and orientation is then iteratively improved. This method therefore benefits from the direct use of raw data from a laser scanner, in addition to a reduction in the dimensionality of the problem through matching the bearings of the polar data by distance. 
+
 
 \subsection{Principal Component Analysis}
 \subsection{Normal distribution transform}
+The normal distribution transform (NDT) by \citet{Biber2003-kb} is one of the first tangential research away from point set/feature matching. The set of points in a map can be converted into a piecewise probability density function over a 2D plane. This can be decomposed into a set of normal distributions, and the second scan can be matched by maximising the sum that the aligned points score on the previous density. The scan matching is hence performed in a different domain, using information preserving transformations. This is readily applicable to our case study, as a set of normal distributions of a map could be pre-computed, thereby avoiding repeated computations. As it relies on creating statistical approximations of the dataset, NDT requires a relatively dense data set for it's map representation; this has the side effect of making it extremely resilient to noisy data. This does remain a form of local search, in-line with previous attempts to produce an odometric correction algorithm rather than a generic localisation. The use of a novel form of hypothetical pose estimation may however be extremely viable when combined with a global search heuristic, such as a genetic algorithm [EXPLORE LATER].
+
+
 \subsection{Hausdorff distance}
+
 \subsection{Hough transform}
 \subsection{Cross-correlation scan matching}
 \subsection{Histogram scan matching}
 
-\section{Overview of genetic algorithms}
-\subsection{Intro to Genetic Algorithms}
+\section{Overview of evolutionary algorithms}
+\subsection{Intro to evolutionary algorithms}
+Evolutionary algorithms are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. 
 \subsection{General chromosome/fitness function design}
 \subsection{Genetic polar scan matching}
 \subsection{GLASM}
