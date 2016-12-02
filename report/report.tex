@@ -100,7 +100,11 @@ The normal distribution transform (NDT) by \citet{Biber2003-kb} is one of the fi
 \section{Overview of evolutionary algorithms}
 \subsection{Intro to evolutionary algorithms}
 Evolutionary algorithms are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. 
+
+Evolutionary algorithms therefore form an alternative to the iterative improvement strategy found in the 'classical' methods previously discussed. This divergence is notable in two ways: firstly, a large number of alternative methods used to evaluate the resultant error from a transformation/rotation tuple can be adapted into the evolutionary algorithm's fitness function, and therefore the genetic algorithm could theoretically discover equivalently optimal minima in the fitness landscape. Secondly, as the initial population can be assigned to poses distributed around the map, and the random nature of a evolutionary algorithms allow individuals to progress against a fitness gradient through mutations and cross-overs, a global optima can be found. Evolutionary algorithms therefore allow many of the previously designed algorithms to be adapted into a solution to generically locate oneself in an environment with no prior knowledge of our displacement.
+
 \subsection{General chromosome/fitness function design}
+
 \subsection{Genetic polar scan matching}
 \subsection{GLASM}
 \subsection{Dynamic GA}
