@@ -24,7 +24,9 @@
 % \lstlistoflistings
 ICP: Iterative Closest Point algorithm
 NDT: Normal distribution transform
-
+EA: Evolutionary Algorithm
+PSM: Polar Scan matching
+GLASM: Genetic Lookup based Algorithm for Scan Matching
 
 \chapter{Introduction}
 \label{cha:Introduction}
@@ -73,7 +75,7 @@ Nevertheless it continues to be an area of continuous research, as \citet{Mingue
 
 Similarly,TrICP \cite{Chetverikov2005-yz} implements a Trimmed Least Squares \cite{Ruppert1980-js} algorithm rather than a Least Squares, improving the robustness to noise or poor initial estimations of the pose.
 
-Finally, \citet{Donoso2017-wp} recently published a comprehensive  overview of 20,736 variants of the ICP algorithm in their ability to consolidate (and therefore place relative to each other) sets of 3 sets of 100 scans at distinct locations. He finds that the performance (precision, accuracy and computational efficiency) of ICP variants can significantly vary depending on the scan and map data, and that no single algorithm was able to adequately solve all 3 scenes in the experiment. As such, the selection of a particular variant of ICP may be significant to the effectiveness of scan matching, as we will later discuss in \ref{cha:gaClassical}.
+Finally, \citet{Donoso2017-wp} recently published a comprehensive  overview of 20,736 variants of the ICP algorithm in their ability to consolidate (and therefore place relative to each other) sets of 3 sets of 100 scans at distinct locations. He finds that the performance (precision, accuracy and computational efficiency) of ICP variants can significantly vary depending on the scan and map data, and that no single algorithm was able to adequately solve all 3 scenes in the experiment. As such, the selection of a particular variant of ICP may be significant to the effectiveness of scan matching, as we will later discuss in \ref{sec:gaClassical}.
 
 
 \subsection{Iterative Dual Correspondence}
@@ -82,7 +84,7 @@ The development of the IDC algorithm by \citet{Lu1997-zv} focused on the same is
 
 
 \subsection{Polar Scan Matching}
-
+%TODO how to apply this to scan->map?
 Polar scan matching \citet{Albert_Diosi2005-iw} utilises the same idea as IDC by adapting the ICP algorithm to use polar coordinates in an effort of minimising computational requirements. After pre-processing each scan to remove inconsistent objects (due to moving objects) and segmenting the points according to a threshold criteria, the current scan is re-projected from the reference position, and the remaining translation and orientation is then iteratively improved. This method therefore benefits from the direct use of raw data from a laser scanner, in addition to a reduction in the dimensionality of the problem through matching the bearings of the polar data by distance. 
 
 
@@ -97,20 +99,33 @@ The normal distribution transform (NDT) by \citet{Biber2003-kb} is one of the fi
 \subsection{Cross-correlation scan matching}
 \subsection{Histogram scan matching}
 
-\section{Overview of evolutionary algorithms}
-\subsection{Intro to evolutionary algorithms}
-Evolutionary algorithms are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. 
+\section{Evolutionary Algorithms}
+\subsection{Overview of genetic algorithms}
+Evolutionary algorithms (EAs) are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. 
 
 Evolutionary algorithms therefore form an alternative to the iterative improvement strategy found in the 'classical' methods previously discussed. This divergence is notable in two ways: firstly, a large number of alternative methods used to evaluate the resultant error from a transformation/rotation tuple can be adapted into the evolutionary algorithm's fitness function, and therefore the genetic algorithm could theoretically discover equivalently optimal minima in the fitness landscape. Secondly, as the initial population can be assigned to poses distributed around the map, and the random nature of a evolutionary algorithms allow individuals to progress against a fitness gradient through mutations and cross-overs, a global optima can be found. Evolutionary algorithms therefore allow many of the previously designed algorithms to be adapted into a solution to generically locate oneself in an environment with no prior knowledge of our displacement.
 
-\subsection{General chromosome/fitness function design}
+% \subsection{General chromosome design}
+% The use genetic algorithms to search for data-matching was first proposed by \citet{Brunnstrom1996-vo} in \citeyear{Brunnstrom1996-vo}; this focused on the ability to find the correspondence between 2 detailed surface models. This was achieved by using a chromosome design based on a transformation, translation and rotation in 3 dimensions. As our scan matching only utilises 2-dimensional data, and temporarily ignoring the need for a transformation to handle noise, this chromosome design overcomplicates the application of scan matching in 2D indoor localisation. As such, the general chromosome design (without accounting for noise management) would simply consist of the 3-tuple previously detailed, composed of 2 transformations and a rotation.
 
-\subsection{Genetic polar scan matching}
-\subsection{GLASM}
-\subsection{Dynamic GA}
+\subsection{Purely evolutionary approaches}
+\subsubsection{Parallel Evolutionary Registration of Range Data}
+\citet{Robertson2002-ou} presented one of the first applications of genetic algorithms as an alternative to the ICP algorithm. Most notably, he contrasts the limitations of ICP (requiring pre-registration by hand to converge to a global minimum, tendency to converge to sub-optimal or incorrect solutions) with the benefits of a genetic algorithm; the latter does not require any form of pre-alignment, and has a significantly broader basin of convergence, allowing it to search for global solutions without any prior knowledge. This is implemented using a 3-tuple matching our problem definition, and results in significantly better global search results than a single ICP run. This therefore demonstrates the potential of genetic algorithms within the field, setting the path for following research.
 
-\section{GA-Classical methods}
-\label{cha:gaClassical}
+\subsubsection{Genetic Algorithm Polar Scan matching}
+Polar Scan matching (PSM) is a variation of the \citeauthor{Robertson2002-ou}\'s initial genetic algorithm, adapted for the use of raw data from a laser range scanner, and therefore benefits from a more efficient computation and a reduced search dimensionality. \citet{Ze-Su2007-li} believes this would represent two $O(n)$ searches: one for the translation estimation, and one for the orientation estimation. This approach is found by \citeauthor{Ze-Su2007-li} to be more precise and efficient than ICP in the given examples, although given the variation in performance of algorithms in scenes \cite{Donoso2017-wp} this result may not be generalisable. 
+
+This method would not be readily adaptable for our case study, as it establish a translation between two scan points. As such, one could sample our map by simulating scans from a variety of points, but this would lead to an efficiency equivalent to executing an ICP algorithm from randomised initial poses. Hence, polar scan matching may not be suitable for our undertaking.
+
+\subsubsection{GLASM}
+The Genetic Lookup based Algorithm for Scan Matching (GLASM) \cite{Lenac2007-xm} is an improvement in the efficiency of the fitness function used in a GA for indoor localisation. This is achieved by 
+\subsubsection{Dynamic GA}
+\subsubsection{Notes}
+% http://ieeexplore.ieee.org.ezproxy.york.ac.uk/stamp/stamp.jsp?arnumber=http://ieeexplore.ieee.org.ezproxy.york.ac.uk/document/7407961/
+
+
+\section{GA \& Classical methods}
+\label{sec:gaClassical}
 \subsection{GA ICP}
 \subsection{GA TrICP}
 \subsection{H-GLASM}
