@@ -26,6 +26,7 @@ ICP: Iterative Closest Point algorithm
 NDT: Normal distribution transform
 EA: Evolutionary Algorithm
 PSM: Polar Scan matching
+HSM: histogram scan matching
 GLASM: Genetic Lookup based Algorithm for Scan Matching
 h-GLASM: Hybrid Genetic Lookup Based Algorithm for Scan Matching
 DGA: Dynamic Genetic Algorithm
@@ -98,11 +99,13 @@ The normal distribution transform (NDT) by \citet{Biber2003-kb} is one of the fi
 
 
 \subsection{Hausdorff distance}
+The usage of the Hausdorff distance was introduced by \citet{Donoso-Aguirre2008-pb}; it is defined as the maximum distance between a point in the scan and it's closest point in the map. As such, it signifies that every point in the scan is not any further from it's closest point in the scan than the Hausdorff distance for these sets of points. This is further improved by using the $k_{th}$ distance so as to avoid false positives due to outlying points, and instead defining the fitness function as the minimisation of the average of the first K ranked maximum Hausdorff distance. Although this could method of pose evaluation could easily be adapted into the fitness function of a genetic algorithm, the demonstrated search method would be limited to finding a local minima; without odometric data, this is unlikely to yield a global maxima. This is due to the use of an iterative gradient descent algorithm. However, the algorithm is shown to be resilient to noise and accurate when given a rough pre-alignment. Therefore, a viable adaptation of this algorithm could involve the use of coarse global search algorithm using the averaged Hausdorff as a measure of error, followed by a different algorithm to refine the roughly pre-aligned method.
 
-\subsection{Hough transform}
-\subsection{Cross-correlation scan matching}
+\subsection{Hough Scan Matching}
+Hough Scan Matching relies on the creation of a function which produces a spectrum from a transformed set of points (using the Hough Transform) which has the following properties; it is invariant to input translations, and is circularly shifted on the input rotation. The search is therefore performed in a different domain which was created using an information-preserving transformation. The output of the scan and map sets can then be combined using a cross-correlation operator to retrieve the relative rotation. From there, a variety of other algorithms can retrieve the most likely translation given one or more candidate rotations; the method can therefore provide a ranked output of possible pose estimations. As presented by \citet{Censi2005-iv}, hough scan matching is therefore a potent, low-complexity approach to global indoor localisation. It may be particularly adaptable to a scan-to-map application as the spectrum of the map could be pre-computed, thereby reducing the processing time for repeated pose estimations.
+
 \subsection{Histogram scan matching}
-
+Histogram scan matching (HSM) 
 \section{Evolutionary Algorithms}
 \subsection{Overview of genetic algorithms}
 Evolutionary algorithms (EAs) are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. 
@@ -150,6 +153,8 @@ The Hybrid Genetic Lookup based Algorithm for Scan Matching (h-GLASM) by \citet{
  - Genetic algorithms appear to lack sufficient accuracy, leading to the use of GA's for global search and subsequent classic methods for an affine local search
 
  - ICP algorithms have successfully been merged with GAs, but no use of the Dynamic GA with other methods although it was suggested by \citet{Lomonosov2006-vq}
+
+ - Potentially use Hausdorff distance as fitness function?
 \cleardoublepage
 
 \bibliographystyle{unsrt}
