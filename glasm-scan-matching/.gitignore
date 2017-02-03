@@ -1,0 +1,54 @@
+# system
+.directory
+
+# text editor backup files
+*~
+
+# eclipse project settings
+*.project
+*.cproject
+*.settings/*
+
+# relese and debug folders
+Debug/*
+Release/*
+
+# experiments folder
+experiments/
+
+
+# temporary files
+*.orig
+gmon.out
+tmp/*
+
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+/Debug/
