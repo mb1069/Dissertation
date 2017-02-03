@@ -110,6 +110,206 @@
 
 
 
+@INCOLLECTION{Moutarlier1990-ld,
+  title     = "An experimental system for incremental environment modelling by
+               an autonomous mobile robot",
+  booktitle = "Experimental Robotics {I}",
+  author    = "Moutarlier, Philippe and Chatila, Raja",
+  editor    = "Hayward, Vincent and Khatib, Oussama",
+  abstract  = "Incremental map-making is a necessary function of an autonomous
+               mobile robot. Sensor data are always imprecise, and in the case
+               of a mobile robot, sensor location is itself imprecise and even
+               sometimes false (e.g. in case of slippage). We show how sensors
+               data inaccuracies can be processed to produce a consistent
+               environment model and an as precise as possible robot
+               positioning. The experimental system (a mobile robot with a
+               laser range finder and odometry) is presented and the
+               theoretical approach is applied on actual data.",
+  publisher = "Springer Berlin Heidelberg",
+  pages     = "327--346",
+  series    = "Lecture Notes in Control and Information Sciences",
+  year      =  1990,
+  language  = "en"
+}
+@ARTICLE{Filliat2003-ay,
+  title    = "Map-based navigation in mobile robots:: I. A review of
+              localization strategies",
+  author   = "Filliat, David and Meyer, Jean-Arcady",
+  abstract = "For a robot, an animal, and even for man, to be able to use an
+              internal representation of the spatial layout of its environment
+              to position itself is a very complex task, which raises numerous
+              issues of perception, categorization and motor control that must
+              all be solved in an integrated manner to promote survival. This
+              point is illustrated here, within the framework of a review of
+              localization strategies in mobile robots. The allothetic and
+              idiothetic sensors that may be used by these robots to build
+              internal representations of their environment, and the maps in
+              which these representations may be instantiated, are first
+              described. Then map-based navigation systems are categorized
+              according to a three-level hierarchy of localization strategies,
+              which respectively call upon direct position inference,
+              single-hypothesis tracking, and multiple-hypothesis tracking. The
+              advantages and drawbacks of these strategies, notably with
+              respect to the limitations of the sensors on which they rely, are
+              discussed throughout the text.",
+  journal  = "Cogn. Syst. Res.",
+  volume   =  4,
+  number   =  4,
+  pages    = "243--282",
+  month    =  dec,
+  year     =  2003,
+  keywords = "Autonomous mobile robot; Map-based navigation; Localization
+              strategies"
+}
+
+
+
+@INCOLLECTION{Ayache1990-ok,
+  title     = "Maintaining Representations of the Environment of a Mobile Robot",
+  booktitle = "Autonomous Robot Vehicles",
+  author    = "Ayache, Nicholas and Faugeras, Olivier D",
+  editor    = "Cox, Ingemar J and Wilfong, Gordon T",
+  abstract  = "In this paper we describe our current ideas related to the
+               problem of building and updating 3-D representation of the
+               environment of a mobile robot that uses passive Vision as its
+               main sensory modality. Our basic tenet is that we want to
+               represent both geometry and uncertainty. We first motivate our
+               approach by defining the problems we are trying to solve and
+               give some simple didactic examples. We then present the tool
+               that we think is extremely well-adapted to solving most of these
+               problems: the extended Kalman filter (EKF). We discuss the
+               notions of minimal geometric representations for 3-D lines,
+               planes, and rigid motions. We show how the EKF and the
+               representations can be combined to provide solutions for some of
+               the problems listed at the beginning of the paper, and give a
+               number of experimental results on real data.",
+  publisher = "Springer New York",
+  pages     = "205--220",
+  year      =  1990,
+  language  = "en"
+}
+
+
+
+@INPROCEEDINGS{Leonard1990-hx,
+  title     = "Dynamic map building for autonomous mobile robot",
+  booktitle = "{EEE} International Workshop on Intelligent Robots and Systems,
+               Towards a New Frontier of Applications",
+  author    = "Leonard, J and Durrant-Whyte, H and Cox, I J",
+  abstract  = "Presents an algorithm for autonomous map building and
+               maintenance for a mobile robot. With each geometric target in
+               the map the authors associate a validation measure to represent
+               the belief in the validity of a target, in addition to the usual
+               covariance matrix to represent spatial uncertainty. At each
+               position update cycle, predicted features are generated for each
+               target in the map and compared to features actually observed.
+               Successful matches to targets with high validation measure are
+               used for localization. Unpredicted observations are used to
+               initialize target tracks for new environment features, while
+               unobserved predictions result in a target's validation measure
+               being decreased. They describe experimental results obtained
+               with the algorithm that demonstrate successful map-building
+               using real sonar data",
+  pages     = "89--96 vol.1",
+  month     =  jul,
+  year      =  1990,
+  keywords  = "matrix algebra;mobile robots;navigation;planning (artificial
+               intelligence);artificial intelligence;autonomous mobile
+               robot;covariance matrix;dynamic map building;geometric
+               target;localization;navigation;path planning;position update
+               cycle;spatial uncertainty;target validity;validation
+               measure;Aircraft navigation;Covariance
+               matrix;Detectors;Filtering;Mobile robots;Remotely operated
+               vehicles;Robot sensing systems;Robotics and automation;Sensor
+               phenomena and characterization;Working environment noise"
+}
+
+
+@INPROCEEDINGS{Einsele1997-dl,
+  title     = "Real-time self-localization in unknown indoor environment using
+               a panorama laser range finder",
+  booktitle = "Intelligent Robots and Systems, 1997. {IROS} '97., Proceedings
+               of the 1997 {IEEE/RSJ} International Conference on",
+  author    = "Einsele, T",
+  abstract  = "This paper deals with self-localization of a mobile robot on the
+               condition that no a-priori knowledge about the environment is
+               available. The applied method features accurate, robust,
+               independent of any artificial landmarks and feasible with such a
+               moderate computational effort that all necessary tasks can be
+               executed in real-time on a standard PC. The perception system
+               used is a panorama laser range finder which takes scans of its
+               present environment. A modified dynamic programming algorithm
+               provides pattern matching and pattern recognition on the
+               preprocessed panorama scans and thereby renders a qualitative
+               fusion of the sensory data. For an exactly quantitative estimate
+               of the robot's current position, a robust localization module is
+               employed. The knowledge gained on the environment is stored in a
+               self-growing, graph based map which combines geometrical
+               information and topological restrictions. Preliminary
+               experiments in an ordinary office environment proved the
+               reliability and efficiency of the system",
+  volume    =  2,
+  pages     = "697--702 vol.2",
+  month     =  sep,
+  year      =  1997,
+  keywords  = "data acquisition;dynamic programming;laser ranging;mobile
+               robots;path planning;pattern matching;position control;real-time
+               systems;self-adjusting systems;sensor fusion;data
+               acquisition;dynamic programming;geometrical information;graph
+               based map;indoor environment;localization module;mobile
+               robot;panorama laser range finder;pattern matching;real-time
+               systems;self-localization;sensor fusion;topological
+               restrictions;Dynamic programming;Heuristic algorithms;Indoor
+               environments;Laser fusion;Laser modes;Mobile robots;Pattern
+               matching;Pattern recognition;Real time systems;Robustness"
+}
+
+
+@INPROCEEDINGS{Borghi1995-pi,
+  title     = "Autonomous map learning for a multi-sensor mobile robot using
+               diktiometric representation and negotiation mechanism",
+  booktitle = "Proceedings International Conference on Advanced Robotics",
+  author    = "Borghi, G and Brugali, D",
+  volume    =  1,
+  year      =  1995
+}
+
+
+@INPROCEEDINGS{Hebert1996-rc,
+  title     = "Decoupling odometry and exteroceptive perception in building a
+               global world map of a mobile robot: the use of local maps",
+  booktitle = "Proceedings of {IEEE} International Conference on Robotics and
+               Automation",
+  author    = "Hebert, P and Betge-Brezetz, S and Chatila, R",
+  abstract  = "A mobile robot navigates in an environment and incrementally
+               builds a map while locating itself. The quality of the map
+               depends on the sensor models. Due to the difficulty of defining
+               a stochastic odometric model, the classical approach based on
+               Kalman filtering is revisited in order to decouple the
+               information provided by the odometric sensor and exteroceptive
+               sensors. The proposed approach is based on the observation and
+               fusion of geometric relationships between objects. These
+               relationships are represented in local maps and related in a
+               global map where odometric information is exploited. The
+               resulting local maps are invariant with respect to biases
+               introduced in the robot location (position and orientation) due
+               to sliding for instance. Experimental results on real data
+               compare both the classical and the proposed approach",
+  volume    =  1,
+  pages     = "757--764 vol.1",
+  month     =  apr,
+  year      =  1996,
+  keywords  = "Kalman filters;covariance matrices;distance measurement;mobile
+               robots;navigation;path planning;sensor fusion;state
+               estimation;Kalman filtering;exteroceptive perception;global
+               world map;local maps;mobile robot;odometry;stochastic odometric
+               model;Costs;Filtering;Kalman filters;Mobile
+               robots;Navigation;Predictive models;Probability
+               distribution;Robot sensing systems;Stochastic
+               processes;Uncertainty"
+}
+
+
 
 
 @article{Martinelli2006-te,
