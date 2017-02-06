@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.6)
 project(glasm_scan_matching)
 
 set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_FLAGS -O0)
+#set(CMAKE_CXX_FLAGS_DEBUG -O0)
+
 
 set(SOURCE_FILES
         experiments/doc/glasm.ini.explained
@@ -114,7 +117,8 @@ set(SOURCE_FILES
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options filesystem)
+#find_package(Boost COMPONENTS filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(/usr/include)

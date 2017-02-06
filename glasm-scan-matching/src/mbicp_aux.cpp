@@ -100,7 +100,7 @@ void init(const char* filename)
 
 	my_options.add_options()
 #ifdef DRAW_PNG
-	("draw_iterations", po::value<bool>(&draw_iterations)->default_value("false"), "set true to draw the mbicp iterations")
+	("draw_iterations", po::value<bool>(&draw_iterations)->default_value(false), "set true to draw the mbicp iterations")
 	("map_filename", po::value<std::string>(&map_filename)->default_value("none"), "map filename")
 	("map_size_x", po::value(&map_size_x)->default_value(15.0), "map_size_x")
 	("map_size_y", po::value(&map_size_y)->default_value(15.0), "map_size_y")

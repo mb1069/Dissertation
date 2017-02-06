@@ -98,7 +98,7 @@ void init(const char* filename)
 	po::options_description my_options("Options");
 
 	my_options.add_options()
-	("draw_iterations", po::value<bool>(&draw_iterations)->default_value("false"), "set true to draw iterations")
+	("draw_iterations", po::value<bool>(&draw_iterations)->default_value(false), "set true to draw iterations")
 	("verbose_level", po::value(&verbose_level)->default_value(0), "verbose_level")
 	("map_filename", po::value<std::string>(&map_filename)->default_value("none"), "map filename")
 	("map_size_x", po::value(&map_size_x)->default_value(15.0), "map_size_x")

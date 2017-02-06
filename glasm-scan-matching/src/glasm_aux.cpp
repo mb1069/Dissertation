@@ -29,6 +29,8 @@
 //#include <math.h>
 //#include <sys/time.h>
 #include <boost/config.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/program_options/detail/config_file.hpp>
 #include <boost/program_options.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -49,7 +51,7 @@ namespace GLASM
 	// based on chosen type of matching, ie based on these ...
 	// if's and namespace pollution would be avoided
 	bool        global_search;
-	bool        static_map;
+	bool        static_map = false;
 	bool        gradient;                           // gradient based lookup generation
 
 	std::string static_map_file;
@@ -109,20 +111,21 @@ void init(const char* filename)
 
 		std::ifstream config_stream(filename);
 		namespace po = boost::program_options;
+
 		po::options_description my_options("Options");
 
 		my_options.add_options()
 //#ifdef DRAW_PNG
-		("draw_lookup", po::value<bool>(&draw_lookup)->default_value("false"), "set true to draw_lookup table ")
-		("draw_individual", po::value<bool>(&draw_individual)->default_value("false"), "set true to draw_individual")
-		("draw_generations", po::value<bool>(&draw_generations)->default_value("false"), "set true to draw_generations ")
+		("draw_lookup", po::value<bool>(&draw_lookup)->default_value(false), "set true to draw_lookup table ")
+		("draw_individual", po::value<bool>(&draw_individual)->default_value(false), "set true to draw_individual")
+		("draw_generations", po::value<bool>(&draw_generations)->default_value(false), "set true to draw_generations ")
 		("map_filename", po::value<std::string>(&map_filename)->default_value("none"), "map filename")
 	("map_size_x", po::value(&map_size_x)->default_value(15.0), "map_size_x")
 	("map_size_y", po::value(&map_size_y)->default_value(15.0), "map_size_y")
 		("verbose_level", po::value(&verbose_level)->default_value(0), "verbose_level")
 //#endif
-		("global_search", po::value<bool>(&global_search)->default_value("false"), "set true to enable global scan matching, ie without initial position estimate to start search in")
-		("static_map", po::value<bool>(&static_map)->default_value("false"), "set true to create a lookup table from a-priori known map (bitmap image). Lookup is created only once during initialization.")
+		("global_search", po::value<bool>(&global_search)->default_value(false), "set true to enable global scan matching, ie without initial position estimate to start search in")
+		("static_map", po::value<bool>(&static_map)->default_value(false), "set true to create a lookup table from a-priori known map (bitmap image). Lookup is created only once during initialization.")
 		("static_map_file", po::value<std::string>(&static_map_file)->default_value("map.png"), "static_map filename - full path")
 		("static_map_valid_pos_file", po::value<std::string>(&static_map_valid_pos_file)->default_value("map.png"), "static_map_valid_pos_file filename - full path")
 
@@ -148,7 +151,7 @@ void init(const char* filename)
 		("maxgen", po::value(&maxgen)->default_value(10), "maxgen")
 
 		// lookup table parameters
-		("gradient", po::value<bool>(&gradient)->default_value("false"), "set true to enable gradient based lookup")
+		("gradient", po::value<bool>(&gradient)->default_value(false), "set true to enable gradient based lookup")
 		("lookup_rows", po::value(&lookup_rows)->default_value(3000), "lookup_rows")
 		("lookup_columns", po::value(&lookup_columns)->default_value(3000), "lookup_columns")
 		("lookup_size_x", po::value(&lookup_size_x)->default_value(40.0), "lookup_size_x")

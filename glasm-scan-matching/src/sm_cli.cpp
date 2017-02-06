@@ -46,7 +46,7 @@
 #include "simulation.h"
 #include "mydraw.h"
 #ifdef DRAW_PNG
-	#include "mydraw.h"
+#include "mydraw.h"
 #endif
 
 #include "utils.h"
@@ -146,8 +146,9 @@ const double estep=0.05;
  * cmd line options)
  ********************************/
 
+
 // general
-const char *general_parameters_file = "sm.ini";
+const char *general_parameters_file = "experiments/current/sm.ini";
 
 std::string     map_filename;
 double          map_size_x;
@@ -159,14 +160,14 @@ std::string     scan_format;
 std::string     ref_scan_filename;
 std::string     new_scan_filename;
 int             new_scan_offset;	// when chosen with offset method, new scan is loaded from file
-									// with index at this offset from ref scan
+// with index at this offset from ref scan
 unsigned        loop_start;			// to test one scan pair set loop_start and loop_end to 1
 unsigned        loop_end;			// to test multiple scan pairs, ref scan is loaded starting from
-									// index loop_start, the loop repeats until loop_end.
+// index loop_start, the loop repeats until loop_end.
 unsigned        runs;				// number of repetitions of the same test -> this is only to
-									// average computation time if we have few tests only.
+// average computation time if we have few tests only.
 unsigned        skip_first_runs;	// we can skip the initial runs which may be perturbed until OS
-									// activity settles ...(typ 5)
+// activity settles ...(typ 5)
 
 bool            draw_scans;
 bool            verbose_level;
@@ -184,7 +185,7 @@ unsigned        res_scan_color_G;
 unsigned        res_scan_color_B;
 
 unsigned        min_scan_readings;	// minimum number of readings that should be in the scans before
-									// matching to proceed with matching test
+// matching to proceed with matching test
 
 bool            resample_scans;
 double          resample_distance;
@@ -220,48 +221,48 @@ void read_simulation_parameters()
 		po::options_description my_options("Options");
 
 		my_options.add_options()
-			("general.map_filename", po::value<std::string>(&map_filename)->default_value("none"), "map filename")
-			("general.map_size_x", po::value(&map_size_x)->default_value(8.0), "map size in meters (x axis)")
-			("general.map_size_y", po::value(&map_size_y)->default_value(8.0), "map size in meters (y axis)")
-			("general.ref_scan", po::value<std::string>(&ref_scan_filename)->default_value("scan3"), "reference scan filename")
-			("general.new_scan", po::value<std::string>(&new_scan_filename)->default_value("scan4"), "new scan filename")
-			("general.scan_path", po::value<std::string>(&scan_path)->default_value("./scans/"), "path to folder containing scans")
-			("general.scan_basename", po::value<std::string>(&scan_basename)->default_value("scan"), "base name for scan file/s. For sm_cli format basename is the base name"
-				" for files like <basename>xxx where xxx is unsigned int, For rawseeds format basename is the name of the file containing scans")
-			("general.scan_format", po::value<std::string>(&scan_format)->default_value("sm_cli"), "format used to save the scans in file.")
-			("general.new_scan_offset", po::value(&new_scan_offset)->default_value(1), "new scan is read from file new_scan_offset positions ahead of ref scan")
-			("general.loop_start", po::value(&loop_start)->default_value(1), "loop start")
-			("general.loop_end", po::value(&loop_end)->default_value(1), "loop end")
-			("general.runs", po::value(&runs)->default_value(1), "number of repetitions of the same test")
-			("general.skip_first_runs", po::value(&skip_first_runs)->default_value(1), "number of initial repetitions of the same test to skip")
-			("general.draw_scans", po::value<bool>(&draw_scans)->default_value("true"), "set true to enable drawing of scans")
-			("general.verbose_level", po::value(&verbose_level)->default_value(0), "verbose_level")
-			("general.ref_scan_color_R", po::value(&ref_scan_color_R)->default_value(0), "color to draw ref_scan")
-			("general.ref_scan_color_G", po::value(&ref_scan_color_G)->default_value(0), "color to draw ref_scan")
-			("general.ref_scan_color_B", po::value(&ref_scan_color_B)->default_value(30000), "color to draw ref_scan")
-			("general.new_scan_color_R", po::value(&new_scan_color_R)->default_value(0), "color to draw ref_scan")
-			("general.new_scan_color_G", po::value(&new_scan_color_G)->default_value(0), "color to draw ref_scan")
-			("general.new_scan_color_B", po::value(&new_scan_color_B)->default_value(60000), "color to draw ref_scan")
-			("general.res_scan_color_R", po::value(&res_scan_color_R)->default_value(0), "color to draw ref_scan")
-			("general.res_scan_color_G", po::value(&res_scan_color_G)->default_value(60000), "color to draw ref_scan")
-			("general.res_scan_color_B", po::value(&res_scan_color_B)->default_value(0), "color to draw ref_scan")
-			("general.min_scan_readings", po::value(&min_scan_readings)->default_value(8), "minimum number of readings that should be in the scans before matching to proceed with matching test")
-			("general.resample_scans", po::value<bool>(&resample_scans)->default_value("true"), "set true to enable resampling of scans ")
-			("general.resample_distance", po::value(&resample_distance)->default_value(0.03), "resample distance")
-			("general.median_filter_scans", po::value<bool>(&median_filter_scans)->default_value("true"), "set true to enable filtering of scans with median filter")
-			("general.median_filter_distance", po::value(&median_filter_distance)->default_value(0.06), "median filter distance")
-			("general.median_filter_order", po::value(&median_filter_order)->default_value(3), "median filter order")
-			("general.ref_scan_odd_readings_only", po::value<bool>(&ref_scan_odd_readings_only)->default_value("false"), "set true to take only every second reading starting from reading 1, thus reducing ref_scan number of readings by half")
-			("general.ref_scan_even_readings_only", po::value<bool>(&ref_scan_even_readings_only)->default_value("false"), "set true to take only every second reading starting from reading 1, thus reducing ref_scan number of readings by half")
-			("general.new_scan_odd_readings_only", po::value<bool>(&new_scan_odd_readings_only)->default_value("false"), "set true to take only every second reading starting from reading 1, thus reducing new_scan number of readings by half")
-			("general.new_scan_even_readings_only", po::value<bool>(&new_scan_even_readings_only)->default_value("false"), "set true to take only every second reading starting from reading 1, thus reducing new_scan number of readings by half")
-			("general.fakeError", po::value<std::string>(&fakeError)->default_value("random"), "type of fake Error to introduce in new scan position")
-			("general.maxFakeErrorX", po::value(&maxFakeErrorX)->default_value(0.2), "maximum added error (initial perturbation) in X direction (meters)")
-			("general.maxFakeErrorY", po::value(&maxFakeErrorY)->default_value(0.2), "maximum added error (initial perturbation) in X direction (meters)")
-			("general.maxFakeErrorRot", po::value(&maxFakeErrorRot)->default_value(0.2), "maximum added error (initial perturbation) in Rot (radians)")
-			("general.success_treshold_traslation", po::value(&success_treshold_traslation)->default_value(0.1), "A matching is considered a failure when the solution is larger than this value in translation (meters)")
-			("general.success_treshold_rotation", po::value(&success_treshold_rotation)->default_value(0.01), "A matching is considered a failure when the solution is larger than this value in rotation (rad)")
-			;
+				("general.map_filename", po::value<std::string>(&map_filename)->default_value("none"), "map filename")
+				("general.map_size_x", po::value(&map_size_x)->default_value(8.0), "map size in meters (x axis)")
+				("general.map_size_y", po::value(&map_size_y)->default_value(8.0), "map size in meters (y axis)")
+				("general.ref_scan", po::value<std::string>(&ref_scan_filename)->default_value("scan3"), "reference scan filename")
+				("general.new_scan", po::value<std::string>(&new_scan_filename)->default_value("scan4"), "new scan filename")
+				("general.scan_path", po::value<std::string>(&scan_path)->default_value("./scans/"), "path to folder containing scans")
+				("general.scan_basename", po::value<std::string>(&scan_basename)->default_value("scan"), "base name for scan file/s. For sm_cli format basename is the base name"
+						" for files like <basename>xxx where xxx is unsigned int, For rawseeds format basename is the name of the file containing scans")
+				("general.scan_format", po::value<std::string>(&scan_format)->default_value("sm_cli"), "format used to save the scans in file.")
+				("general.new_scan_offset", po::value(&new_scan_offset)->default_value(1), "new scan is read from file new_scan_offset positions ahead of ref scan")
+				("general.loop_start", po::value(&loop_start)->default_value(1), "loop start")
+				("general.loop_end", po::value(&loop_end)->default_value(1), "loop end")
+				("general.runs", po::value(&runs)->default_value(1), "number of repetitions of the same test")
+				("general.skip_first_runs", po::value(&skip_first_runs)->default_value(1), "number of initial repetitions of the same test to skip")
+				("general.draw_scans", po::value<bool>(&draw_scans)->default_value(true), "set true to enable drawing of scans")
+				("general.verbose_level", po::value(&verbose_level)->default_value(0), "verbose_level")
+				("general.ref_scan_color_R", po::value(&ref_scan_color_R)->default_value(0), "color to draw ref_scan")
+				("general.ref_scan_color_G", po::value(&ref_scan_color_G)->default_value(0), "color to draw ref_scan")
+				("general.ref_scan_color_B", po::value(&ref_scan_color_B)->default_value(30000), "color to draw ref_scan")
+				("general.new_scan_color_R", po::value(&new_scan_color_R)->default_value(0), "color to draw ref_scan")
+				("general.new_scan_color_G", po::value(&new_scan_color_G)->default_value(0), "color to draw ref_scan")
+				("general.new_scan_color_B", po::value(&new_scan_color_B)->default_value(60000), "color to draw ref_scan")
+				("general.res_scan_color_R", po::value(&res_scan_color_R)->default_value(0), "color to draw ref_scan")
+				("general.res_scan_color_G", po::value(&res_scan_color_G)->default_value(60000), "color to draw ref_scan")
+				("general.res_scan_color_B", po::value(&res_scan_color_B)->default_value(0), "color to draw ref_scan")
+				("general.min_scan_readings", po::value(&min_scan_readings)->default_value(8), "minimum number of readings that should be in the scans before matching to proceed with matching test")
+				("general.resample_scans", po::value<bool>(&resample_scans)->default_value(true), "set true to enable resampling of scans ")
+				("general.resample_distance", po::value(&resample_distance)->default_value(0.03), "resample distance")
+				("general.median_filter_scans", po::value<bool>(&median_filter_scans)->default_value(true), "set true to enable filtering of scans with median filter")
+				("general.median_filter_distance", po::value(&median_filter_distance)->default_value(0.06), "median filter distance")
+				("general.median_filter_order", po::value(&median_filter_order)->default_value(3), "median filter order")
+				("general.ref_scan_odd_readings_only", po::value<bool>(&ref_scan_odd_readings_only)->default_value(false), "set true to take only every second reading starting from reading 1, thus reducing ref_scan number of readings by half")
+				("general.ref_scan_even_readings_only", po::value<bool>(&ref_scan_even_readings_only)->default_value(false), "set true to take only every second reading starting from reading 1, thus reducing ref_scan number of readings by half")
+				("general.new_scan_odd_readings_only", po::value<bool>(&new_scan_odd_readings_only)->default_value(false), "set true to take only every second reading starting from reading 1, thus reducing new_scan number of readings by half")
+				("general.new_scan_even_readings_only", po::value<bool>(&new_scan_even_readings_only)->default_value(false), "set true to take only every second reading starting from reading 1, thus reducing new_scan number of readings by half")
+				("general.fakeError", po::value<std::string>(&fakeError)->default_value("random"), "type of fake Error to introduce in new scan position")
+				("general.maxFakeErrorX", po::value(&maxFakeErrorX)->default_value(0.2), "maximum added error (initial perturbation) in X direction (meters)")
+				("general.maxFakeErrorY", po::value(&maxFakeErrorY)->default_value(0.2), "maximum added error (initial perturbation) in X direction (meters)")
+				("general.maxFakeErrorRot", po::value(&maxFakeErrorRot)->default_value(0.2), "maximum added error (initial perturbation) in Rot (radians)")
+				("general.success_treshold_traslation", po::value(&success_treshold_traslation)->default_value(0.1), "A matching is considered a failure when the solution is larger than this value in translation (meters)")
+				("general.success_treshold_rotation", po::value(&success_treshold_rotation)->default_value(0.01), "A matching is considered a failure when the solution is larger than this value in rotation (rad)")
+				;
 
 		unsigned i=0;                                // this part of code is ugly but it's the first thing that came to my mind
 		while (i<MAXALGS) {                          //  to add options for a group of algorithms in ini file
@@ -284,10 +285,10 @@ void read_simulation_parameters()
 			strcpy(&parameters_file[strlen(parameters_file)],".parameters_file"); // parameters_file="algorithm_i.parameters_file"
 
 			my_options.add_options()
-				(name, po::value<std::string>(&(a[i].name))->default_value("-1"), "algorithm name")
-				(base_algorithm, po::value<std::string>(&(a[i].base_algorithm))->default_value("-1"), "algorithm from which this one is derived")
-				(parameters_file, po::value<std::string>(&(a[i].parameters_file))->default_value("-1"), "parameters_file from which to load algorithm parameters")
-				;
+					(name, po::value<std::string>(&(a[i].name))->default_value("-1"), "algorithm name")
+					(base_algorithm, po::value<std::string>(&(a[i].base_algorithm))->default_value("-1"), "algorithm from which this one is derived")
+					(parameters_file, po::value<std::string>(&(a[i].parameters_file))->default_value("-1"), "parameters_file from which to load algorithm parameters")
+					;
 
 			i++;
 		} // end while
@@ -385,8 +386,8 @@ void read_simulation_parameters()
 		{   algorithm[NumAlgorithms].init			= PGAMBICP::init;
 			algorithm[NumAlgorithms].pre_match		= PGAMBICP::pre_match;
 			algorithm[NumAlgorithms].match			= PGAMBICP::match;
-		algorithm[NumAlgorithms].post_match			= PGAMBICP::post_match;
-		algorithm[NumAlgorithms].deinit				= PGAMBICP::deinit;
+			algorithm[NumAlgorithms].post_match			= PGAMBICP::post_match;
+			algorithm[NumAlgorithms].deinit				= PGAMBICP::deinit;
 		} else
 		if (a[i].base_algorithm.compare("polarga")==0 || a[i].base_algorithm.compare("\"polarga\"")==0)
 		{
@@ -404,9 +405,9 @@ void read_simulation_parameters()
 			// todo: trim a[i].parameters_file from surrounding "". For now do not surround filename with "" in sm.ini
 			if (verbose_level>0)
 			{	std::cout << "[read_simulation_parameters] added algorithm: " << algorithm[NumAlgorithms].name
-				<< " (based on " << algorithm[NumAlgorithms].base_algorithm << ")"
-				<< " with parameters in: " << algorithm[NumAlgorithms].parameters_file
-				<< std::endl;
+						   << " (based on " << algorithm[NumAlgorithms].base_algorithm << ")"
+						   << " with parameters in: " << algorithm[NumAlgorithms].parameters_file
+						   << std::endl;
 			}
 
 
@@ -425,6 +426,7 @@ int filecount(const char * path)
 	struct dirent * entry;
 
 	dirp = opendir(path); /* There should be error handling after this */
+    std::cout << path << std::endl;
 	while ((entry = readdir(dirp)) != NULL)
 	{	if (entry->d_type == DT_REG)  /* If the entry is a regular file */
 		{	file_count++;
@@ -444,7 +446,7 @@ void rawseeds_write_random_sample(const char *filename, unsigned N)
 		std::cout << " i:" << i << " r:" << r << std::endl;
 		if (i>=TOTALSCANS)
 		{	std::cout << "rawseeds_scans size is less than required!"
-			"The number of saved scans is less than requested.";
+					"The number of saved scans is less than requested.";
 			break;
 		}
 		if (verbose_level>0)
@@ -560,6 +562,7 @@ then the files would be: "./scans/scan15" for reference scan and
 	} else if (scan_format.compare("rawseeds") == 0)
 	{
 		static bool file_loaded = false;
+
 		if (!file_loaded)
 		{	if (verbose_level>0) std::cout << "Loading from rawseeds format file: " << scan_path+scan_basename << std::endl;
 			rawseeds_scans.clear();
@@ -644,6 +647,8 @@ then the files would be: "./scans/scan15" for reference scan and
 	//std::cout << "read scan ts1 size: " << ts1.readings.size()<<std::endl;
 	//std::cout << "read scan ts2 size: " << ts2.readings.size()<<std::endl;
 } // load_scan_pair
+
+
 
 
 void add_fake_error_pos(scan &s)
@@ -769,15 +774,15 @@ void pre_process_scans()
 	if (median_filter_scans)
 	{ 	if (verbose_level>0)
 		{	std::cout << "[pre_process_scans         ] median filter of order "
-			<<  median_filter_order << " and distance " << median_filter_distance
-			<< " applied to sref and snew" << std::endl;
+					   <<  median_filter_order << " and distance " << median_filter_distance
+					   << " applied to sref and snew" << std::endl;
 		}
 	}
 
 	if (resample_scans)
 	{	if (verbose_level>0)
 		{	std::cout << "[pre_process_scans         ] resampling with resample distance "
-			<< resample_distance << " applied to sref and snew" << std::endl;
+					   << resample_distance << " applied to sref and snew" << std::endl;
 		}
 	}
 
@@ -803,9 +808,9 @@ bool is_failure(double dist, double rot, unsigned iter)
 	rot=fabs(rot);
 	//std::cout << "isfailure dist=" << dist << " rot = " << rot << std::endl;
 	if (isnan(dist) || isnan(rot)
-	|| dist>success_treshold_traslation
-	|| rot>success_treshold_rotation
-	|| dist<0.0 )
+		|| dist>success_treshold_traslation
+		|| rot>success_treshold_rotation
+		|| dist<0.0 )
 	{
 		return true;
 	}
@@ -970,22 +975,23 @@ int main(int argc, char **argv)
 			if (!isnan(mres.p.x) && !isnan(mres.p.y) && !isnan(mres.p.rot))
 			{
 
-#ifdef DRAW_PNG
+
 				if (draw_scans)
 				{	const unsigned SIZE = 255;
 					char filename[SIZE];
-					snprintf(filename,SIZE,"./images/alg%d_%s.png",pair,algorithm[alg].name.c_str());
+					snprintf(filename,SIZE,"images/alg%d_%s.png",pair,algorithm[alg].name.c_str());
+                    std::cout << filename << std::endl;
 					drawing img(filename, map_size_x, map_size_y,-map_size_x/2.0,-map_size_y/2.0,map_filename.c_str());
 					img.grid();
-					img.setpointsize(6);
+					img.setpointsize(1);
 					img.setcolor(0,0,30000);
 					img.readings(ts1,ts1.pos);
-					img.setpointsize(4);
+					img.setpointsize(1);
 					img.setcolor(0,0,50000);
 					img.readings(ts2,ts2.pos);
 					rs.copy(ws2);
 					rs.pos=mres.p;                // rs.pos contains corrected position (ie motion estimation)
-					img.setpointsize(4);
+					img.setpointsize(1);
 					img.setcolor(0,30000,0);
 					img.readings(ws2,ws2.pos);
 					img.setcolor(0,50000,0);
@@ -993,7 +999,7 @@ int main(int argc, char **argv)
 					img.readings(rs,rs.pos);
 					img.write();
 				}
-#endif
+
 
 				x[alg][NumValidPairs]=mres.p.x;
 				y[alg][NumValidPairs]=mres.p.y;
@@ -1143,27 +1149,27 @@ int main(int argc, char **argv)
 			// print resulting position and computation time
 			std::cout << std::endl;
 			std::cout << "Valid pairs: " << NumValidPairs <<
-				" SuccessRatio(" << SuccessRatio[alg] << ")" << std::endl;
+					  " SuccessRatio(" << SuccessRatio[alg] << ")" << std::endl;
 			std::cout << "computation time (microseconds) for succesfull matchings" <<
-				" average: " << algorithm[alg].mtime_success <<
-				" variance: " << algorithm[alg].vtime_success <<
-				" std dev: " << sqrt(algorithm[alg].vtime_success) << std::endl;
+					  " average: " << algorithm[alg].mtime_success <<
+					  " variance: " << algorithm[alg].vtime_success <<
+					  " std dev: " << sqrt(algorithm[alg].vtime_success) << std::endl;
 			std::cout << "number of iterations for succesfull matchings" <<
-				" average: " << algorithm[alg].miter_success <<
-				" variance: " << algorithm[alg].viter_success <<
-				" std dev: " << sqrt(algorithm[alg].viter_success) << std::endl;
+					  " average: " << algorithm[alg].miter_success <<
+					  " variance: " << algorithm[alg].viter_success <<
+					  " std dev: " << sqrt(algorithm[alg].viter_success) << std::endl;
 			std::cout << "computation time (microseconds) for failed matchings" <<
-				" average: " << algorithm[alg].mtime_failure <<
-				" variance: " << algorithm[alg].vtime_failure <<
-				" std dev: " << sqrt(algorithm[alg].vtime_failure) << std::endl;
+					  " average: " << algorithm[alg].mtime_failure <<
+					  " variance: " << algorithm[alg].vtime_failure <<
+					  " std dev: " << sqrt(algorithm[alg].vtime_failure) << std::endl;
 			std::cout << "number of iterations for failed matchings" <<
-				" average: " << algorithm[alg].miter_failure <<
-				" variance: " << algorithm[alg].viter_failure <<
-				" std dev: " << sqrt(algorithm[alg].viter_failure) << std::endl;
+					  " average: " << algorithm[alg].miter_failure <<
+					  " variance: " << algorithm[alg].viter_failure <<
+					  " std dev: " << sqrt(algorithm[alg].viter_failure) << std::endl;
 			std::cout << "accuracy (meters)" <<
-				" average(" << algorithm[alg].mdist << "," << algorithm[alg].mrot << ")" <<
-				" variance(" << algorithm[alg].vdist << "," << algorithm[alg].vrot << ")" <<
-				" std dev(" << sqrt(algorithm[alg].vdist) << "," << sqrt(algorithm[alg].vrot) << ")" << std::endl;
+					  " average(" << algorithm[alg].mdist << "," << algorithm[alg].mrot << ")" <<
+					  " variance(" << algorithm[alg].vdist << "," << algorithm[alg].vrot << ")" <<
+					  " std dev(" << sqrt(algorithm[alg].vdist) << "," << sqrt(algorithm[alg].vrot) << ")" << std::endl;
 		}
 
 		std::cout << std::endl;
@@ -1172,7 +1178,7 @@ int main(int argc, char **argv)
 		std::cout << SuccessRatio[alg]*100 << " %" << std::endl;
 		std::cout.precision(2);
 		std::cout << algorithm[alg].mtime_success/1000.0 << " ("
-				<< sqrt(algorithm[alg].vtime_success)/1000.0 << ") ms" << std::endl;
+				  << sqrt(algorithm[alg].vtime_success)/1000.0 << ") ms" << std::endl;
 		std::cout << algorithm[alg].mdist*100 << " (" << sqrt(algorithm[alg].vdist)*100 << ") mm" << std::endl;
 		std::cout << algorithm[alg].mrot << " (" << sqrt(algorithm[alg].vrot) << ") mrad" << std::endl;
 	} // end algorithms loop

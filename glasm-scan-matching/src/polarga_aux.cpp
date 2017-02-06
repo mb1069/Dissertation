@@ -87,8 +87,8 @@ void init(const char* filename)
 	po::options_description my_options("Options");
 
 	my_options.add_options()
-		("draw_individual", po::value<bool>(&draw_individual)->default_value("false"), "set true to draw_individual")
-		("draw_generations", po::value<bool>(&draw_generations)->default_value("false"), "set true to draw_generations ")
+		("draw_individual", po::value<bool>(&draw_individual)->default_value(false), "set true to draw_individual")
+		("draw_generations", po::value<bool>(&draw_generations)->default_value(false), "set true to draw_generations ")
 		("verbose_level", po::value(&verbose_level)->default_value(0), "verbose_level")
 		("nbitx", po::value(&nbitx)->default_value(8), "nbitx")
 		("nbity", po::value(&nbity)->default_value(8), "nbity")
@@ -112,7 +112,7 @@ void init(const char* filename)
 		("CORR_DISTANCE_TRESHOLD", po::value(&CORR_DISTANCE_TRESHOLD)->default_value(8), "CORR_DISTANCE_TRESHOLD")
 		("FOV", po::value(&FOV)->default_value(8), "Laser Field of view")
 		("NREADINGS", po::value(&NREADINGS)->default_value(8), "NREADINGS")
-		("RELAXED_CORR_SEARCH", po::value<bool>(&RELAXED_CORR_SEARCH)->default_value("false"), "set true to get more correspondence points between scans by relaxing conditions")
+		("RELAXED_CORR_SEARCH", po::value<bool>(&RELAXED_CORR_SEARCH)->default_value(false), "set true to get more correspondence points between scans by relaxing conditions")
 	;
 
 	po::variables_map vm;

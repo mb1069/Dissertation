@@ -59,7 +59,7 @@ namespace GLASM
 
 // local proc declarations
 //void objfunc(struct individual *critter);
-bool chromosome2pos(unsigned c);
+	bool chromosome2pos(unsigned c);
 //void initializeInvGrayTable(void);
 //void initializeLookupTable(void);
 //void deleteLookupTable(void);
@@ -68,221 +68,221 @@ bool chromosome2pos(unsigned c);
 //---------------------------------------------------------------------------
 
 // todo: put this as parameter
-const unsigned outlier_treshold=200;
+	const unsigned outlier_treshold=200;
 
 //#ifdef DRAW_PNG
-bool draw_lookup;
-bool draw_individual;
-bool draw_generations;
-unsigned verbose_level;
-std::string lookup_bitmap;
-std::string valid_bitmap;
-double map_size_x;
-double map_size_y;
-std::string map_filename;
+	bool draw_lookup;
+	bool draw_individual;
+	bool draw_generations;
+	unsigned verbose_level;
+	std::string lookup_bitmap;
+	std::string valid_bitmap;
+	double map_size_x;
+	double map_size_y;
+	std::string map_filename;
 
-void setDebugParameters(bool udraw_lookup,
-	bool udraw_individual,
-	bool udraw_generations,
-	unsigned uverbose_level,
-	double umap_size_x,
-	double umap_size_y,
-	std::string umap_filename,
-	std::string ulookup_bitmap,
-	std::string uvalid_bitmap)
-{   draw_lookup=udraw_lookup;
-	draw_individual=udraw_individual;
-	draw_generations=udraw_generations;
-	verbose_level=uverbose_level;
-	lookup_bitmap=ulookup_bitmap;
-	valid_bitmap=uvalid_bitmap;
-	map_filename=umap_filename;
-	map_size_x=umap_size_x;
-	map_size_y=umap_size_y;
-}
+	void setDebugParameters(bool udraw_lookup,
+							bool udraw_individual,
+							bool udraw_generations,
+							unsigned uverbose_level,
+							double umap_size_x,
+							double umap_size_y,
+							std::string umap_filename,
+							std::string ulookup_bitmap,
+							std::string uvalid_bitmap)
+	{   draw_lookup=udraw_lookup;
+		draw_individual=udraw_individual;
+		draw_generations=udraw_generations;
+		verbose_level=uverbose_level;
+		lookup_bitmap=ulookup_bitmap;
+		valid_bitmap=uvalid_bitmap;
+		map_filename=umap_filename;
+		map_size_x=umap_size_x;
+		map_size_y=umap_size_y;
+	}
 
 //#endif
 
 
 // genetic params and proc to set them from outside
-int nbitx;
-int nbity;
-int nbitrot;
-int popsize;
-int maxruns;
-int maxgen;
-double pcross;
-double pmutation;
+	int nbitx;
+	int nbity;
+	int nbitrot;
+	int popsize;
+	int maxruns;
+	int maxgen;
+	double pcross;
+	double pmutation;
 //---------------------------------------------------------------------------
 
-void setGeneticParameters(int unbitx, int unbity, int unbitrot, int upopsize, int umaxruns, int umaxgen, double upcross, double upmutation)
-{   nbitx=unbitx;
-nbity=unbity;
-nbitrot=unbitrot;
-popsize=upopsize;
-maxruns=umaxruns;
-maxgen=umaxgen;
-pcross=upcross;
-pmutation=upmutation;
-}
+	void setGeneticParameters(int unbitx, int unbity, int unbitrot, int upopsize, int umaxruns, int umaxgen, double upcross, double upmutation)
+	{   nbitx=unbitx;
+		nbity=unbity;
+		nbitrot=unbitrot;
+		popsize=upopsize;
+		maxruns=umaxruns;
+		maxgen=umaxgen;
+		pcross=upcross;
+		pmutation=upmutation;
+	}
 //---------------------------------------------------------------------------
 
-unsigned xmask;
-unsigned ymask;
-unsigned rotmask;
+	unsigned xmask;
+	unsigned ymask;
+	unsigned rotmask;
 //---------------------------------------------------------------------------
 
 // lookup table, its parameters and proc to set them from outside
-unsigned char **lookup;
-unsigned char **valid;
-double          lookup_step_x;      // lookup_size_x/lookup_columns;
-double          lookup_step_y;      // lookup_size_y/lookup_rows;
-unsigned char **RGbmp;
-unsigned        lookup_rows;        // number of rows= 3000;
-unsigned        lookup_columns;     // number of columns= 3000;
-double          lookup_size_x;      // dimensione lato x area in metri =10.0
-double          lookup_size_y;      // dimensione lato y area in metri =10.0
-double          corr_distance;      // distanza entro la quale cercare i corrispondenti
-double          lookup_ox;          // coord x dell'angolo inf sin dell'area a ScanRef.pos.x-lookup_size_x/2.0
-double          lookup_oy;          // ScanRef.pos.y-lookup_size_y/2.0
-unsigned        NX,NY,NX2,NY2,MX,MY; // variabili aux per indicare i limiti dell'area da crescere intorno ai punti di sref
+	unsigned char **lookup;
+	unsigned char **valid;
+	double          lookup_step_x;      // lookup_size_x/lookup_columns;
+	double          lookup_step_y;      // lookup_size_y/lookup_rows;
+	unsigned char **RGbmp;
+	unsigned        lookup_rows;        // number of rows= 3000;
+	unsigned        lookup_columns;     // number of columns= 3000;
+	double          lookup_size_x;      // dimensione lato x area in metri =10.0
+	double          lookup_size_y;      // dimensione lato y area in metri =10.0
+	double          corr_distance;      // distanza entro la quale cercare i corrispondenti
+	double          lookup_ox;          // coord x dell'angolo inf sin dell'area a ScanRef.pos.x-lookup_size_x/2.0
+	double          lookup_oy;          // ScanRef.pos.y-lookup_size_y/2.0
+	unsigned        NX,NY,NX2,NY2,MX,MY; // variabili aux per indicare i limiti dell'area da crescere intorno ai punti di sref
 //---------------------------------------------------------------------------
 
-void setLookupTableParameters(int ulookup_rows, int ulookup_columns, double ulookup_size_x, double ulookup_size_y,  double ulookup_centerx, double ulookup_centery, double ucorr_distance)
-{   lookup_columns=ulookup_columns;
-lookup_rows=ulookup_rows;
-lookup_size_x=ulookup_size_x;
-lookup_size_y=ulookup_size_y;
-lookup_step_x=lookup_size_x/lookup_columns;
-lookup_step_y=lookup_size_y/lookup_rows;
+	void setLookupTableParameters(int ulookup_rows, int ulookup_columns, double ulookup_size_x, double ulookup_size_y,  double ulookup_centerx, double ulookup_centery, double ucorr_distance)
+	{   lookup_columns=ulookup_columns;
+		lookup_rows=ulookup_rows;
+		lookup_size_x=ulookup_size_x;
+		lookup_size_y=ulookup_size_y;
+		lookup_step_x=lookup_size_x/lookup_columns;
+		lookup_step_y=lookup_size_y/lookup_rows;
 
 // todo: check if ulookup_centerx and y can always be 0. If yes remove them as parameters
-lookup_ox=ulookup_centerx-lookup_size_x/2.0;  // coord x lower left corner
-lookup_oy=ulookup_centery-lookup_size_y/2.0;  // coord y lower left corner
-corr_distance=ucorr_distance;
-}
+		lookup_ox=ulookup_centerx-lookup_size_x/2.0;  // coord x lower left corner
+		lookup_oy=ulookup_centery-lookup_size_y/2.0;  // coord y lower left corner
+		corr_distance=ucorr_distance;
+	}
 
 // gray code lookup tables and their initialization (only invGray is used)
-const unsigned GraySIZE = 1024;    // todo: attention! max 10 bit per x,y or fi
-unsigned Gray[GraySIZE];
-unsigned invGray[GraySIZE];
+	const unsigned GraySIZE = 1024;    // todo: attention! max 10 bit per x,y or fi
+	unsigned Gray[GraySIZE];
+	unsigned invGray[GraySIZE];
 
-void initialize_Gray_table()
-{    for (unsigned i=0; i < GraySIZE; i++)
-	Gray[i]=i ^ (i >> 1);
-}
-void initialize_invGray_table()
-{    for (unsigned i=0; i < GraySIZE; i++)
-{    int ish;
-	unsigned long ans,idiv;
-	ish=1; // This is the more complicated direction: In hierarchical stages, starting with a one-bit right shift, cause each bit to be XORed with all more significant bits.
-	ans=i;
-	for (;;)
-	{    ans ^= (idiv=ans >> ish);
-	if (idiv <= 1 || ish == 16) break;
-	ish <<= 1; // Double the amount of shift on the next cycle.
+	void initialize_Gray_table()
+	{    for (unsigned i=0; i < GraySIZE; i++)
+			Gray[i]=i ^ (i >> 1);
 	}
-	invGray[i]=ans;
-}
-}
+	void initialize_invGray_table()
+	{    for (unsigned i=0; i < GraySIZE; i++)
+		{    int ish;
+			unsigned long ans,idiv;
+			ish=1; // This is the more complicated direction: In hierarchical stages, starting with a one-bit right shift, cause each bit to be XORed with all more significant bits.
+			ans=i;
+			for (;;)
+			{    ans ^= (idiv=ans >> ish);
+				if (idiv <= 1 || ish == 16) break;
+				ish <<= 1; // Double the amount of shift on the next cycle.
+			}
+			invGray[i]=ans;
+		}
+	}
 
 // alternative way ...
-inline unsigned long unGray(unsigned long r) {
-r ^= r>>1;
-r ^= r>>2;
-r ^= r>>4;
-r ^= r>>8;
-r ^= r>>16;
-return r;
-}
+	inline unsigned long unGray(unsigned long r) {
+		r ^= r>>1;
+		r ^= r>>2;
+		r ^= r>>4;
+		r ^= r>>8;
+		r ^= r>>16;
+		return r;
+	}
 
 
-void initialize_invGray_table2()
-{   for (unsigned i=0; i < GraySIZE; i++)
-{   invGray[i]=unGray(i);
-}
-}
+	void initialize_invGray_table2()
+	{   for (unsigned i=0; i < GraySIZE; i++)
+		{   invGray[i]=unGray(i);
+		}
+	}
 
 //---------------------------------------------------------------------------
 // scans and proc to set them from outside
-scan ScanRef;
-scan ScanNew;
-void setRefScan(const scan& usref)
-{
-ScanRef.pos=usref.pos;
-ScanRef.copy(usref);
-}
+	scan ScanRef;
+	scan ScanNew;
+	void setRefScan(const scan& usref)
+	{
+		ScanRef.pos=usref.pos;
+		ScanRef.copy(usref);
+	}
 
-void setNewScan(const scan& usnew)
-{
-ScanNew.pos=usnew.pos;
-ScanNew.copy(usnew);
-}
+	void setNewScan(const scan& usnew)
+	{
+		ScanNew.pos=usnew.pos;
+		ScanNew.copy(usnew);
+	}
 
 
-void add_dither_to_scan(scan &S)
-{
-const double LSIGMA_L = 0.03;
-const double LSIGMA_THETA = 0.003;
-const int NumDitherPoints = 5;
+	void add_dither_to_scan(scan &S)
+	{
+		const double LSIGMA_L = 0.03;
+		const double LSIGMA_THETA = 0.003;
+		const int NumDitherPoints = 5;
 // [todo] put these constants as parameters
 // [todo] uniformare con radial gradient -> radial gradient specificarlo in coord polari come qui e dipendente dalla distanza
 
-SIT i2=S.readings.begin();
+		SIT i2=S.readings.begin();
 
-while ( i2 != S.readings.end() )
-{
-	for(int i=0;i<NumDitherPoints;i++) {
-	double eps_l=gauss(LSIGMA_L,0.0);    //[todo] si potrebbe agg. dipendenza dalla distanze dell'errore
-	double eps_theta=gauss(LSIGMA_THETA,0.0);
-	reading p = {i2->angle+eps_theta,i2->distance+eps_l};
-	S.readings.insert(i2,p);
+		while ( i2 != S.readings.end() )
+		{
+			for(int i=0;i<NumDitherPoints;i++) {
+				double eps_l=gauss(LSIGMA_L,0.0);    //[todo] si potrebbe agg. dipendenza dalla distanze dell'errore
+				double eps_theta=gauss(LSIGMA_THETA,0.0);
+				reading p = {i2->angle+eps_theta,i2->distance+eps_l};
+				S.readings.insert(i2,p);
+			}
+			i2++;
+		}
+
 	}
-	i2++;
-}
-
-}
 
 
 //---------------------------------------------------------------------------
 // search area and proc to set it from outside
 // todo: setcenterofsearcharea (search area distance, search area rotation)
-double MaxX;
-double MinX;
-double MaxY;
-double MinY;
-double MaxFI;
-double MinFI;;
-double StepX;   // one step through the search space will be derived from the resolution (ie nbitx) and search space size
-double StepY;
-double StepFI;
+	double MaxX;
+	double MinX;
+	double MaxY;
+	double MinY;
+	double MaxFI;
+	double MinFI;;
+	double StepX;   // one step through the search space will be derived from the resolution (ie nbitx) and search space size
+	double StepY;
+	double StepFI;
 
-void setSearchArea(double uMinX, double uMaxX, double uMinY, double uMaxY,double uMinRot, double uMaxRot)
-{   MaxX=uMaxX;
-MinX=uMinX;
-MaxY=uMaxY;
-MinY=uMinY;
-if (uMaxRot<uMinRot) {
-	MinFI=uMaxRot;
-	MaxFI=uMinRot;
-} else {
-	MaxFI=uMaxRot;
-	MinFI=uMinRot;
-}
+	void setSearchArea(double uMinX, double uMaxX, double uMinY, double uMaxY,double uMinRot, double uMaxRot)
+	{   MaxX=uMaxX;
+		MinX=uMinX;
+		MaxY=uMaxY;
+		MinY=uMinY;
+		if (uMaxRot<uMinRot) {
+			MinFI=uMaxRot;
+			MaxFI=uMinRot;
+		} else {
+			MaxFI=uMaxRot;
+			MinFI=uMinRot;
+		}
 // temp
 //MaxFI=2*M_PI;
 //MinFI=0.0;
 // endtemp
-}
+	}
 
 
-void setCenterOfSearchArea(position pos)
-{   // todo
-}
+	void setCenterOfSearchArea(position pos)
+	{   // todo
+	}
 
 #ifdef DRAW_PNG
 
-void draw_lookup_table(const char * filename, int type)
+	void draw_lookup_table(const char * filename, int type)
 {   static bool first_occurance = true; // draw only for first scan pair. currently it is
 	if (first_occurance)                //  of little use to draw for every scan pair
 	{
@@ -312,77 +312,77 @@ void draw_valid_table(const char * filename)
 #endif
 
 
-void initialize_binary_lookup_table()
-{
-try
-{    // allocazione memoria per array (tabella di lookup)
+	void initialize_binary_lookup_table()
+	{
+		try
+		{    // allocazione memoria per array (tabella di lookup)
 
-	lookup= new unsigned char*[lookup_columns]; // sizeX (sizeX puntatori a colonne)
+			lookup= new unsigned char*[lookup_columns]; // sizeX (sizeX puntatori a colonne)
 
-	for ( unsigned j = 0 ; j < lookup_columns ; j++ )
-	lookup[j]= new unsigned char[lookup_rows]; // sizeY (sizeY elementi di una colonna)
-}
-catch (std::bad_alloc &e)
-{
-	throw std::string("Bad allocation, probabilmente non ho sufficente memoria");
-}
+			for ( unsigned j = 0 ; j < lookup_columns ; j++ )
+				lookup[j]= new unsigned char[lookup_rows]; // sizeY (sizeY elementi di una colonna)
+		}
+		catch (std::bad_alloc &e)
+		{
+			throw std::string("Bad allocation, probabilmente non ho sufficente memoria");
+		}
 
 
 // inizializzazione array di lookup
-for (unsigned i = 0; i < lookup_columns; i++)
-	for (unsigned j = 0; j < lookup_rows; j++)
-	lookup[i][j] = 0;
+		for (unsigned i = 0; i < lookup_columns; i++)
+			for (unsigned j = 0; j < lookup_rows; j++)
+				lookup[i][j] = 0;
 
-lookup_step_x=lookup_size_x/lookup_columns;
-lookup_step_y=lookup_size_y/lookup_rows;
+		lookup_step_x=lookup_size_x/lookup_columns;
+		lookup_step_y=lookup_size_y/lookup_rows;
 
 // calcola limiti discreti area da crescere (num celle per avere un area che circoscrive corr_distance_trashold) e variabili ausiliarie
-NX= (unsigned int)(corr_distance/lookup_step_x);
-NY= (unsigned int)(corr_distance/lookup_step_y);
-NX2= NX/2;
-NY2= NY/2;
-MX= (unsigned int)(lookup_size_x/lookup_step_x-NX2); // maximum X, ie last X cell where border starts
-MY= (unsigned int)(lookup_size_y/lookup_step_y-NY2); // maximum Y, ie last Y cell
+		NX= (unsigned int)(corr_distance/lookup_step_x);
+		NY= (unsigned int)(corr_distance/lookup_step_y);
+		NX2= NX/2;
+		NY2= NY/2;
+		MX= (unsigned int)(lookup_size_x/lookup_step_x-NX2); // maximum X, ie last X cell where border starts
+		MY= (unsigned int)(lookup_size_y/lookup_step_y-NY2); // maximum Y, ie last Y cell
 
 
 // cresci
-SIT i1=ScanRef.readings.begin();
+		SIT i1=ScanRef.readings.begin();
 
-while ( i1!=ScanRef.readings.end() )
-{
-	// coordinate X,Y gobali del reading di S1
-	double X=ScanRef.pos.x+i1->distance*cos(ScanRef.pos.rot+i1->angle);
-	double Y=ScanRef.pos.y+i1->distance*sin(ScanRef.pos.rot+i1->angle);
-
-
-	// discretizzazione
-	unsigned icx=(unsigned int)(floor((X-lookup_ox)/lookup_step_x+0.5)); // discretizzo X+lookup_ox cioe X espresso in coord locali nel frame
-	unsigned icy=(unsigned int)(floor((Y-lookup_oy)/lookup_step_y+0.5)); // -
-
-	// praparazione variabili ausiliarie
-	unsigned ix=(icx>NX2?icx-NX2:0);// ix e' la cella iniziale, fx la cella finale. IF nelle parentesi per stare attenti ai bordi
-	unsigned fx=(icx<MX?icx+NX2:MX+NX2);
-	unsigned iy=(icy>NY2?icy-NY2:0);
-	unsigned fy=(icy<MY?icy+NY2:MY+NY2);
-
-	if (fx>=lookup_rows) fx=lookup_rows-1;
-	if (ix<0) ix=0;
-	if (fy>=lookup_columns)    fy=lookup_columns-1;
-	if (iy<0) iy=0;
-
-
-	// crescita nell'intorno di reading di S1
-	for ( unsigned i= ix ; i < fx ; i++ )
-
-		for ( unsigned j= iy ; j < fy ; j++ )
+		while ( i1!=ScanRef.readings.end() )
 		{
-		lookup[i][j]=1;
+			// coordinate X,Y gobali del reading di S1
+			double X=ScanRef.pos.x+i1->distance*cos(ScanRef.pos.rot+i1->angle);
+			double Y=ScanRef.pos.y+i1->distance*sin(ScanRef.pos.rot+i1->angle);
+
+
+			// discretizzazione
+			unsigned icx=(unsigned int)(floor((X-lookup_ox)/lookup_step_x+0.5)); // discretizzo X+lookup_ox cioe X espresso in coord locali nel frame
+			unsigned icy=(unsigned int)(floor((Y-lookup_oy)/lookup_step_y+0.5)); // -
+
+			// praparazione variabili ausiliarie
+			unsigned ix=(icx>NX2?icx-NX2:0);// ix e' la cella iniziale, fx la cella finale. IF nelle parentesi per stare attenti ai bordi
+			unsigned fx=(icx<MX?icx+NX2:MX+NX2);
+			unsigned iy=(icy>NY2?icy-NY2:0);
+			unsigned fy=(icy<MY?icy+NY2:MY+NY2);
+
+			if (fx>=lookup_rows) fx=lookup_rows-1;
+			if (ix<0) ix=0;
+			if (fy>=lookup_columns)    fy=lookup_columns-1;
+			if (iy<0) iy=0;
+
+
+			// crescita nell'intorno di reading di S1
+			for ( unsigned i= ix ; i < fx ; i++ )
+
+				for ( unsigned j= iy ; j < fy ; j++ )
+				{
+					lookup[i][j]=1;
+				}
+			i1++;
 		}
-	i1++;
-}
 
 #ifdef DRAW_PNG
-static bool first=true;
+		static bool first=true;
 if (draw_lookup && first) {
 	draw_lookup_table("./images/lookup_binary.png",0);
 	std::cout << "./images/lookup_binary.png" << std::endl;
@@ -390,19 +390,19 @@ if (draw_lookup && first) {
 }
 #endif
 
-}
+	}
 //---------------------------------------------------------------------------
 
 // immagine bitmap e' convertita in tabella di lookup proiettando pixel neri in valori TRUE dell'array
 // Purpose of LOOKUP TABLE: x,y real values are discretized, ie mapped into one pixel of LOOKUP TABLE to find out quickly if the position is close to reference scan or map.
-void initialize_lookup_table_from_bitmap(std::string pBitmapFileName, // nomefile immagine per la fitness lookup
-					double BITMAP_SIZE_X,        // dimensione lato x in metri
-					double BITMAP_SIZE_Y,        // dimensione lato y in metri                                            double BORDER_SIZE)          // dimensione bordo che viene aggiunto alla bitmap (lookup che sia un po piu grande)
-					double BORDER_SIZE)
-{
+	void initialize_lookup_table_from_bitmap(std::string pBitmapFileName, // nomefile immagine per la fitness lookup
+											 double BITMAP_SIZE_X,        // dimensione lato x in metri
+											 double BITMAP_SIZE_Y,        // dimensione lato y in metri                                            double BORDER_SIZE)          // dimensione bordo che viene aggiunto alla bitmap (lookup che sia un po piu grande)
+											 double BORDER_SIZE)
+	{
 
 #ifdef DRAW_PNG
-pngwriter bmp_lookup;
+		pngwriter bmp_lookup;
 
 bmp_lookup.readfromfile(pBitmapFileName.c_str());
 unsigned BITMAP_ROWS=bmp_lookup.getheight();
@@ -466,17 +466,17 @@ static bool first=true;
 
 #endif
 
-}
+	}
 //---------------------------------------------------------------------------
 
 // tabella per indicare posizioni valide da quelle non valide (masks valid positions for search area)
 // Purpose of VALID_POS_LOOKUP TABLE: discrete x,y chromosome positions (ie 8 bit for x => 256 positions in x direction) are
 //  mapped as valid or not based on existing bitmap of valid positions. VALID_POS_LOOKUP table is nothing more then original bitmap of valid positions squeezedfitted/covered in the resolution.
-void initialize_valid_table_from_bitmap(std::string pBitmapFileName)
-{
+	void initialize_valid_table_from_bitmap(std::string pBitmapFileName)
+	{
 
 #ifdef DRAW_PNG
-pngwriter bmp_valid;
+		pngwriter bmp_valid;
 bmp_valid.readfromfile(pBitmapFileName.c_str());
 unsigned valid_rows=bmp_valid.getheight();
 unsigned valid_columns=bmp_valid.getwidth();
@@ -520,13 +520,13 @@ if (draw_lookup)
 }
 #endif
 
-}
+	}
 //---------------------------------------------------------------------------
 
 
 
-void initialize_radial_gradient(double RGmean, double RGvariance, double RGextension, double RGweight, double RGscale, double RGbitmapsize)
-{   // prepare radial gradient bitmap
+	void initialize_radial_gradient(double RGmean, double RGvariance, double RGextension, double RGweight, double RGscale, double RGbitmapsize)
+	{   // prepare radial gradient bitmap
 //  this will be impressed in lookup on top of each sref reading
 // double RGmean - normal curve mean
 // double RGvariance - normal curve variance
@@ -536,35 +536,35 @@ void initialize_radial_gradient(double RGmean, double RGvariance, double RGexten
 
 
 // bitmap size in pixels relative to lookup table size
-NX = (unsigned int)(RGbitmapsize*RGscale);
-NX2= NX/2;
-NY=NX;
-NY2=NX2;
+		NX = (unsigned int)(RGbitmapsize*RGscale);
+		NX2= NX/2;
+		NY=NX;
+		NY2=NX2;
 //std::cout << "bmp" << RGmean << "," << RGvariance << "," << RGextension << "," << RGweight << "," << RGscale << "," <<  RGbitmapsize << std::endl;
-try
-{   // allocazione memoria per array (RadialGradientBitmap)
+		try
+		{   // allocazione memoria per array (RadialGradientBitmap)
 
-	RGbmp= new unsigned char*[NX]; // righe dell'array
+			RGbmp= new unsigned char*[NX]; // righe dell'array
 
-	for ( unsigned j = 0 ; j < NX ; j++ )
-	RGbmp[j]= new unsigned char[NX]; // colonne dell'array
-}
-catch (std::bad_alloc  &e)
-{
-	throw std::string("Bad allocation, probabilmente non ho sufficente memoria");
-}
+			for ( unsigned j = 0 ; j < NX ; j++ )
+				RGbmp[j]= new unsigned char[NX]; // colonne dell'array
+		}
+		catch (std::bad_alloc  &e)
+		{
+			throw std::string("Bad allocation, probabilmente non ho sufficente memoria");
+		}
 
 
 // inizializzazione array di lookup
-for (unsigned i = 0; i < NX; i++)
-	for (unsigned j = 0; j < NX; j++)
-	{      double d=sqrt((i-NX2)*(i-NX2)+(j-NX2)*(j-NX2))/RGextension;
-	double t1 = (d -  RGmean)/RGvariance;
-	double t2 = -0.5*t1*t1;
-	RGbmp[i][j] = (unsigned) (exp(t2)/(RGvariance*sqrt(2*M_PI))*RGweight);
-	//if (RGbmp[i][j]>127) RGbmp[i][j]=127; // clipping
-	//if (RGbmp[i][j]<0) RGbmp[i][j]=0; // clipping
-	}
+		for (unsigned i = 0; i < NX; i++)
+			for (unsigned j = 0; j < NX; j++)
+			{      double d=sqrt((i-NX2)*(i-NX2)+(j-NX2)*(j-NX2))/RGextension;
+				double t1 = (d -  RGmean)/RGvariance;
+				double t2 = -0.5*t1*t1;
+				RGbmp[i][j] = (unsigned) (exp(t2)/(RGvariance*sqrt(2*M_PI))*RGweight);
+				//if (RGbmp[i][j]>127) RGbmp[i][j]=127; // clipping
+				//if (RGbmp[i][j]<0) RGbmp[i][j]=0; // clipping
+			}
 // temp: checking ...
 //    for (unsigned j = 0; j < NX; j++)
 //    {   std::cout << "  R=" << (unsigned) RGbmp[NX2][j] << std::endl;
@@ -572,7 +572,7 @@ for (unsigned i = 0; i < NX; i++)
 // end temp
 
 #ifdef DRAW_PNG
-if (draw_lookup)
+		if (draw_lookup)
 {   static bool first_occurance = true; // draw only for first scan pair. currently it is
 	if (first_occurance)                //  of little use to draw for every scan pair
 	{   char filename[FILENAME_SIZE];   //  in experiments with multiple scan pairs
@@ -589,74 +589,74 @@ if (draw_lookup)
 	}
 }
 #endif
-} // initialize_radial_gradient
+	} // initialize_radial_gradient
 
-void initialize_gradient_lookup_table()
-{
-try
-{   // allocazione memoria per array (tabella di lookup)
+	void initialize_gradient_lookup_table()
+	{
+		try
+		{   // allocazione memoria per array (tabella di lookup)
 
-	lookup= new unsigned char*[lookup_columns]; // righe dell'array
+			lookup= new unsigned char*[lookup_columns]; // righe dell'array
 
-	for ( unsigned j = 0 ; j < lookup_columns ; j++ )
-	lookup[j]= new unsigned char[lookup_rows]; // colonne dell'array
-}
-catch (std::bad_alloc &e)
-{
-	throw std::string("Bad allocation, probabilmente non ho sufficente memoria");
-}
+			for ( unsigned j = 0 ; j < lookup_columns ; j++ )
+				lookup[j]= new unsigned char[lookup_rows]; // colonne dell'array
+		}
+		catch (std::bad_alloc &e)
+		{
+			throw std::string("Bad allocation, probabilmente non ho sufficente memoria");
+		}
 
 
 // inizializzazione array di lookup
-for (unsigned i = 0; i < lookup_columns; i++)
-	for (unsigned j = 0; j < lookup_rows; j++)
-	lookup[i][j] = 0;
+		for (unsigned i = 0; i < lookup_columns; i++)
+			for (unsigned j = 0; j < lookup_rows; j++)
+				lookup[i][j] = 0;
 
-unsigned MX= (unsigned int)(lookup_size_x/lookup_step_x-NX2); // maximum X, ie last X cell where border starts
-unsigned MY= (unsigned int)(lookup_size_y/lookup_step_y-NY2); // maximum Y, ie last Y cell
+		unsigned MX= (unsigned int)(lookup_size_x/lookup_step_x-NX2); // maximum X, ie last X cell where border starts
+		unsigned MY= (unsigned int)(lookup_size_y/lookup_step_y-NY2); // maximum Y, ie last Y cell
 
 
 // cresci
-SIT i1=ScanRef.readings.begin();
+		SIT i1=ScanRef.readings.begin();
 
-while ( i1!=ScanRef.readings.end() )
-{
-	// coordinate X,Y gobali del reading di S1
-	double X=ScanRef.pos.x+i1->distance*cos(ScanRef.pos.rot+i1->angle);
-	double Y=ScanRef.pos.y+i1->distance*sin(ScanRef.pos.rot+i1->angle);
-
-
-	// discretizzazione
-	unsigned icx=(unsigned int)(floor((X-lookup_ox)/lookup_step_x+0.5)); // discretizzo X+lookup_ox cioe X espresso in coord locali nel frame
-	unsigned icy=(unsigned int)(floor((Y-lookup_oy)/lookup_step_y+0.5)); // -
+		while ( i1!=ScanRef.readings.end() )
+		{
+			// coordinate X,Y gobali del reading di S1
+			double X=ScanRef.pos.x+i1->distance*cos(ScanRef.pos.rot+i1->angle);
+			double Y=ScanRef.pos.y+i1->distance*sin(ScanRef.pos.rot+i1->angle);
 
 
-	// praparazione variabili ausiliarie
-	unsigned ix=(icx>NX2?icx-NX2:0);// ix e' la cella iniziale, fx la cella finale. IF nelle parentesi per stare attenti ai bordi
-	unsigned fx=(icx<MX?icx+NX2:MX+NX2);
-	unsigned iy=(icy>NY2?icy-NY2:0);
-	unsigned fy=(icy<MY?icy+NY2:MY+NY2);
-
-	if (fx>=lookup_rows) fx=lookup_rows-1;
-	if (ix<0) ix=0;
-	if (fy>=lookup_columns) fy=lookup_columns-1;
-	if (iy<0) iy=0;
+			// discretizzazione
+			unsigned icx=(unsigned int)(floor((X-lookup_ox)/lookup_step_x+0.5)); // discretizzo X+lookup_ox cioe X espresso in coord locali nel frame
+			unsigned icy=(unsigned int)(floor((Y-lookup_oy)/lookup_step_y+0.5)); // -
 
 
-	// crescita nell'intorno di reading di S1
-	unsigned sum;
-	for ( unsigned i= ix ; i < fx ; i++ )
+			// praparazione variabili ausiliarie
+			unsigned ix=(icx>NX2?icx-NX2:0);// ix e' la cella iniziale, fx la cella finale. IF nelle parentesi per stare attenti ai bordi
+			unsigned fx=(icx<MX?icx+NX2:MX+NX2);
+			unsigned iy=(icy>NY2?icy-NY2:0);
+			unsigned fy=(icy<MY?icy+NY2:MY+NY2);
 
-		for ( unsigned j= iy ; j < fy ; j++ )
-		{    sum=lookup[i][j]+RGbmp[i-ix][j-iy];
-		if (sum>255) lookup[i][j]=255; else lookup[i][j]=sum;
-		//lookup[i][j]+=RGbmp[i-ix][j-iy];
+			if (fx>=lookup_rows) fx=lookup_rows-1;
+			if (ix<0) ix=0;
+			if (fy>=lookup_columns) fy=lookup_columns-1;
+			if (iy<0) iy=0;
+
+
+			// crescita nell'intorno di reading di S1
+			unsigned sum;
+			for ( unsigned i= ix ; i < fx ; i++ )
+
+				for ( unsigned j= iy ; j < fy ; j++ )
+				{    sum=lookup[i][j]+RGbmp[i-ix][j-iy];
+					if (sum>255) lookup[i][j]=255; else lookup[i][j]=sum;
+					//lookup[i][j]+=RGbmp[i-ix][j-iy];
+				}
+			i1++;
 		}
-	i1++;
-}
 
 #ifdef DRAW_PNG
-static bool first=true;
+		static bool first=true;
 	if (draw_lookup && first ) {
 	draw_lookup_table("./images/lookup_gradient.png",1);
 	std::cout << "./images/lookup_gradient.png" << std::endl;
@@ -665,15 +665,15 @@ static bool first=true;
 
 #endif
 
-}
+	}
 //---------------------------------------------------------------------------
 
 
-void delete_lookup_table()
-{    for (unsigned i = 0; i < lookup_columns; i++)
-	delete[] lookup[i]; // delete the columns
-delete[] lookup;// delete the rows
-}
+	void delete_lookup_table()
+	{    for (unsigned i = 0; i < lookup_columns; i++)
+			delete[] lookup[i]; // delete the columns
+		delete[] lookup;// delete the rows
+	}
 
 
 //---------------------------------------------------------------------------
@@ -681,7 +681,7 @@ delete[] lookup;// delete the rows
 
 #ifdef DRAW_PNG
 
-void drawfun(int run, int gen, int popsize, struct individual *newpop, struct bestever *bestfit)
+	void drawfun(int run, int gen, int popsize, struct individual *newpop, struct bestever *bestfit)
 {   static unsigned prevChrom;
 	char filename[FILENAME_SIZE];
 
@@ -746,47 +746,48 @@ void drawfun(int run, int gen, int popsize, struct individual *newpop, struct be
 
 
 // todo: use this function for quick float2int in objfun. Should be faster ...
-inline int float2int( double d )
-{
-	union Cast
+	inline int float2int( double d )
 	{
-		double d;
-		long l;
+		union Cast
+		{
+			double d;
+			long l;
 		};
-	volatile Cast c;
-	c.d = d + 6755399441055744.0;
-	return c.l;
-}
+		volatile Cast c;
+		c.d = d + 6755399441055744.0;
+		return c.l;
+	}
 
 
 
-void objfun(struct individual *critter)
-{
-	// if (cachehit(critter->chrom)
+	void objfun(struct individual *critter)
+	{
+		// if (cachehit(critter->chrom)
 
 
-if (!chromosome2pos(critter->chrom))
-{   critter->fitness = 0;                   // invalid position: for now if position is invalid put fitness at 0 (ie low)
-	return;
-}
-unsigned counter=0;
+		if (!chromosome2pos(critter->chrom))
+		{   critter->fitness = 0;                   // invalid position: for now if position is invalid put fitness at 0 (ie low)
+			return;
+		}
+		unsigned counter=0;
 
-SIT i2=ScanNew.readings.begin();
+		SIT i2=ScanNew.readings.begin();
 //    unsigned outlier=0;
 
-while ( i2 != ScanNew.readings.end() )
-{
-	// coordinate X,Y gobali del reading di S2
-	double X=ScanNew.pos.x+i2->distance*cos(ScanNew.pos.rot+i2->angle);
-	double Y=ScanNew.pos.y+i2->distance*sin(ScanNew.pos.rot+i2->angle);
+		while ( i2 != ScanNew.readings.end() )
+		{
+			// coordinate X,Y gobali del reading di S2
+			double X=ScanNew.pos.x+i2->distance*cos(ScanNew.pos.rot+i2->angle);
+			double Y=ScanNew.pos.y+i2->distance*sin(ScanNew.pos.rot+i2->angle);
 
-	// discretizzazione
-	unsigned ix=(unsigned int)(floor( (X - lookup_ox) / lookup_step_x + 0.5) ); // discretizzo X+lookup_ox cioe X espresso in coord locali nel frame
-	unsigned iy=(unsigned int)(floor( (Y - lookup_oy) / lookup_step_y + 0.5) ); // -
+			// discretizzazione
+			unsigned ix=(unsigned int)(floor( (X - lookup_ox) / lookup_step_x + 0.5) ); // discretizzo X+lookup_ox cioe X espresso in coord locali nel frame
+			unsigned iy=(unsigned int)(floor( (Y - lookup_oy) / lookup_step_y + 0.5) ); // -
 
-	if (ix<lookup_columns && ix>=0 && iy<lookup_rows && iy>=0)
-	{
-	counter+=lookup[ix][iy];     // lookup
+
+			if (ix<lookup_columns && ix>=0 && iy<lookup_rows && iy>=0)
+			{
+				counter+=lookup[ix][iy];     // lookup
 
 //            // lookup, guardiamo se vicino cera un corrispondente
 //            if ( lookup[ix][iy] ) counter++;
@@ -794,26 +795,26 @@ while ( i2 != ScanNew.readings.end() )
 //            {   critter->fitness = 0;                   // too many readings in invalid positions: for now put fitness at 0 (ie low)
 //                return;
 //            }
-	}
+			}
 
-	i2++;
-}
-critter->fitness = counter;
-}
+			i2++;
+		}
+		critter->fitness = counter;
+	}
 //---------------------------------------------------------------------------
 
 // TODO: avoid function call (make it void as before or define inline)
-bool chromosome2pos(const unsigned c)// interpreta posizione dal cromosoma (sapendo che il chromosoma e' < di 32 bit (ci sta in un unsigned di 32 bit) ho semplificato un po')
-{
-unsigned x,y,fi;
+	bool chromosome2pos(const unsigned c)// interpreta posizione dal cromosoma (sapendo che il chromosoma e' < di 32 bit (ci sta in un unsigned di 32 bit) ho semplificato un po')
+	{
+		unsigned x,y,fi;
 
-x=(c&xmask);// primi nbitx bit
-x=invGray[x];// codice Gray inverso
+		x=(c&xmask);// primi nbitx bit
+		x=invGray[x];// codice Gray inverso
 
-y=c;
-y=y>>nbitx;
-y=(y&ymask);
-y=invGray[y];
+		y=c;
+		y=y>>nbitx;
+		y=(y&ymask);
+		y=invGray[y];
 
 
 // check if chromosome is valid (resulting position, only x and y, is inside search area)
@@ -829,61 +830,61 @@ y=invGray[y];
 
 
 
-fi=c;
-fi=fi>>(nbitx+nbity);
-fi=(fi&rotmask);
-fi=invGray[fi];
+		fi=c;
+		fi=fi>>(nbitx+nbity);
+		fi=(fi&rotmask);
+		fi=invGray[fi];
 
-ScanNew.pos.x=MinX+x*StepX;
-ScanNew.pos.y=MinY+y*StepY;
-ScanNew.pos.rot=MinFI+fi*StepFI;
-if (ScanNew.pos.rot>2*M_PI) ScanNew.pos.rot-=2*M_PI; // this line should not be necessary ???
-return true;
+		ScanNew.pos.x=MinX+x*StepX;
+		ScanNew.pos.y=MinY+y*StepY;
+		ScanNew.pos.rot=MinFI+fi*StepFI;
+		if (ScanNew.pos.rot>2*M_PI) ScanNew.pos.rot-=2*M_PI; // this line should not be necessary ???
+		return true;
 
-}
+	}
 //---------------------------------------------------------------------------
 
-position glasm(double* outfitness)
+	position glasm(double* outfitness)
 // input parameters (must be set prior to calling GLASM):
 //    reference and new scan (the provided position of the new scan is not used and can be whatever, it will be estimated by the algorithm.
 //        this is different in local scan matching algorithms where this position is used as the initial position estimate and is only corrected by the algorithm)
 //    search area
 //     GLASM genetic parameters (nbitx,nbity,nbitrot,popsize,maxruns,maxgen,pcross,pmutation)
 //    GLASM lookup table parameters
-{
-sga_parameters(nbitx,nbity,nbitrot,popsize,maxruns,maxgen,pcross,pmutation);    // set genetic parameters
+	{
+		sga_parameters(nbitx,nbity,nbitrot,popsize,maxruns,maxgen,pcross,pmutation);    // set genetic parameters
 
-xmask=(1<<nbitx)-1;
-ymask=(1<<nbity)-1;
-rotmask=(1<<nbitrot)-1;
+		xmask=(1<<nbitx)-1;
+		ymask=(1<<nbity)-1;
+		rotmask=(1<<nbitrot)-1;
 
-unsigned ResX=1<<nbitx;
-StepX=(MaxX-MinX)/ResX;
+		unsigned ResX=1<<nbitx;
+		StepX=(MaxX-MinX)/ResX;
 
-unsigned ResY=1<<nbity;
-StepY=(MaxY-MinY)/ResY;
-unsigned ResFI=1<<nbitrot;
+		unsigned ResY=1<<nbity;
+		StepY=(MaxY-MinY)/ResY;
+		unsigned ResFI=1<<nbitrot;
 
-angleUnwrap(MinFI);
-angleUnwrap(MaxFI);
-if (MinFI>MaxFI)
-{   // swap
-	double t=MaxFI;
-	MaxFI=MinFI;
-	MinFI=t;
-}
-double anglediff=MaxFI-MinFI;
-StepFI=anglediff/ResFI;
-set_sga_objfun(&objfun);
+		angleUnwrap(MinFI);
+		angleUnwrap(MaxFI);
+		if (MinFI>MaxFI)
+		{   // swap
+			double t=MaxFI;
+			MaxFI=MinFI;
+			MinFI=t;
+		}
+		double anglediff=MaxFI-MinFI;
+		StepFI=anglediff/ResFI;
+		set_sga_objfun(&objfun);
 
 #ifdef DRAW_PNG
-set_sga_drawfun(&drawfun);
+		set_sga_drawfun(&drawfun);
 #endif
 
-bestever bestfit=sga();
-  *outfitness = bestfit.fitness;
-chromosome2pos(bestfit.chrom);
-return ScanNew.pos;
-} // objfun
+		bestever bestfit=sga();
+		*outfitness = bestfit.fitness;
+		chromosome2pos(bestfit.chrom);
+		return ScanNew.pos;
+	} // objfun
 
 } // namespace
