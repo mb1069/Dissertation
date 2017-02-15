@@ -1,6 +1,6 @@
 import re
 
-reg = re.compile('(?:.+[:])?([-|0-9|.]+)+')
+reg = re.compile("(?:.+[:])?([-|0-9|.]+)+")
 
 
 class Scan:

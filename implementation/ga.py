@@ -19,24 +19,13 @@ def randInt():
 
 
 def evaluate(individual):
-    block_vals = []
-    for val in xrange(0, IND_SIZE, 3):
-        s = sum(individual[val:val + 3])
-        v = 0
-        if s == 0:
-            v = 0.9
-        elif s == 1:
-            v = 0.8
-        elif s == 2:
-            v = 0.0
-        elif s == 3:
-            v = 1.0
-        block_vals.append(v)
-    return sum(block_vals) / len(block_vals),
+    pass
+    # TODO
+    # return sum(block_vals) / len(block_vals),
 
 
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
+creator.create("FitnessMin", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMin)
 
 toolbox = base.Toolbox()
 toolbox.register("attr_int", randInt)
