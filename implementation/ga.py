@@ -1,27 +1,33 @@
 import random
 import numpy
+from scanreader import Scan
 
 from deap import base
 from deap import creator
 from deap import tools
 from deap import algorithms
 
-NGEN = 500
+NGEN = 1
+POP = 100
 CXPB = 0.5
 MUTPB = 0.2
 
-MIN = 0
-MAX = 1
+MIN = -10
+MAX = 10
+
+scan = Scan("data/scan0")
 
 
 def randInt():
     return random.randint(0, 1)
 
 
+
 def evaluate(individual):
     pass
     # TODO
     # return sum(block_vals) / len(block_vals),
+
 
 
 creator.create("FitnessMin", base.Fitness, weights=(1.0,))
@@ -33,11 +39,11 @@ toolbox.register("individual", tools.initRepeat, creator.Individual,
                  toolbox.attr_int, n=3)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-toolbox.register("mutate", tools.mutFlipBit, indpb=0.2)
+toolbox.register("mutate", tools.mutFlipBit, indpb=MUTPB)
 
 toolbox.register("select", tools.selTournament, tournsize=3)
-toolbox.register("mate", tools.cxUniform)
-toolbox.register("evaluate", evaluate)
+toolbox.register("mate", tools.cxUniform, indpb=CXPB)
+toolbox.register("evaluate", evaluate, scan=scan)
 
 stats = tools.Statistics(key=lambda ind: ind.fitness.values)
 stats.register("avg", numpy.mean, axis=0)
@@ -71,7 +77,7 @@ toolbox.decorate("mutate", check_bounds(MIN, MAX))
 
 
 def main():
-    pop = toolbox.population(n=300)
+    pop = toolbox.population(n=POP)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", numpy.mean)
@@ -79,7 +85,7 @@ def main():
     stats.register("min", numpy.min)
     stats.register("max", numpy.max)
 
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=40,
+    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                    stats=stats, halloffame=hof, verbose=True)
 
 
