@@ -8,34 +8,33 @@ from deap import base
 from deap import creator
 from deap import tools
 
+from refmap import RefMap
 from scanreader import Scan
 from util import hausdorff, applytuple
 
-NGEN = 10
-POP = 50
+NGEN = 1000
+POP = 100
 CXPB = 0.0
 MUTPB = 1.0
 
 MIN = -10
 MAX = 10
 
-Xerr = 10
-Yerr = 5
+Xerr = -3
+Yerr = 2
 rotErr = 0.1
 
-refscan = Scan("data/scan0")
-errorscan = applytuple(refscan.scan_points, Xerr, Yerr, rotErr)
-
-print hausdorff(refscan.scan_points, applytuple(refscan.scan_points, 0,0,0))
+refmap = RefMap("data/combined.csv", samplesize=1000)
+errorscan = Scan("data/scan0").scan_points
 
 
 def randfloat():
-    return random.uniform(-1, 1)
+    return random.uniform(-5, 5)
 
 
 def evaluate(individual):
     dataset = applytuple(errorscan, *individual)
-    return hausdorff(dataset, refscan.scan_points),
+    return hausdorff(dataset, refmap.points),
 
 
 def check_bounds(min, max):
@@ -95,6 +94,16 @@ def main():
     expr = tools.selBest(pop, 1)[0]
     print expr
 
+
+    # print len(self.points), samplesize
+    # plt.figure("X/Y")
+    # plt.xlabel("x")
+    # plt.ylabel("y")
+    # plt.xlim(-10, 10)
+    # plt.ylim(-10, 10)
+    # plt.gca().set_aspect('equal', adjustable='box')
+    # plt.scatter([p[0] for p in self.points], [p[1] for p in self.points], s=2, marker='x')
+    # plt.show()
 
 if __name__ == "__main__":
     main()

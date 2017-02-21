@@ -18,8 +18,15 @@ def applytuple(scan_points, xErr, yErr, rotErr):
         points.append(np.array((x, y)))
     return points
 
+def polar2origincartesian(scan, dist, ang):
+    dist = float(dist)
+    ang = float(ang)
+    return np.array((scan.posx + dist * math.cos(ang+scan.rot), scan.posy + dist * math.sin(ang+scan.rot)))
+
 
 def polar2cartesian(dist, ang):
+    dist = float(dist)
+    ang = float(ang)
     return np.array((dist * math.cos(ang), dist * math.sin(ang)))
 
 
