@@ -10,21 +10,18 @@ from deap import tools
 
 from refmap import RefMap
 from scanreader import Scan
-from util import hausdorff, applytuple
+from util import hausdorff, applytuple, graph_results
 
-NGEN = 1000
-POP = 100
-CXPB = 0.0
-MUTPB = 1.0
+NGEN = 1
+POP = 1
+CXPB = 0.05
+MUTPB = 0.02
 
 MIN = -10
 MAX = 10
 
-Xerr = -3
-Yerr = 2
-rotErr = 0.1
-
-refmap = RefMap("data/combined.csv", samplesize=1000)
+# refmap = RefMap("data/combined.csv", samplesize=1000)
+refmap = RefMap("data/combined.csv")
 errorscan = Scan("data/scan0").scan_points
 
 
@@ -34,7 +31,7 @@ def randfloat():
 
 def evaluate(individual):
     dataset = applytuple(errorscan, *individual)
-    return hausdorff(dataset, refmap.points),
+    return 1/(1+hausdorff(dataset, refmap.points)),
 
 
 def check_bounds(min, max):
@@ -64,12 +61,12 @@ def main():
 
     toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.125, indpb=MUTPB)
 
-    toolbox.register("select", tools.selTournament, tournsize=3)
-    toolbox.register("mate", tools.cxOnePoint, indpb=CXPB)
+    toolbox.register("select", tools.selRoulette)
+    toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
 
-    pool = multiprocessing.Pool()
-    toolbox.register("map", pool.map)
+    # pool = multiprocessing.Pool()
+    # toolbox.register("map", pool.map)
 
     stats = tools.Statistics(key=lambda ind: ind.fitness.values)
     stats.register("avg", numpy.mean, axis=0)
@@ -92,8 +89,7 @@ def main():
     pop, log = algorithms.eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                    stats=stats, halloffame=hof, verbose=True)
     expr = tools.selBest(pop, 1)[0]
-    print expr
-
+    graph_results(refmap, errorscan, expr)
 
     # print len(self.points), samplesize
     # plt.figure("X/Y")
