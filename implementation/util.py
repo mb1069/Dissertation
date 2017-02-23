@@ -60,7 +60,7 @@ def euclid_distance(p1, p2):
 
 def hausdorff(set1, set2):
     h = 0
-    for p1 in tqdm(set1):
+    for p1 in set1:
         shortest = float('inf')
         for p2 in set2:
             dist = euclid_distance(p1, p2)
@@ -68,4 +68,15 @@ def hausdorff(set1, set2):
                 shortest = dist
         if shortest > h:
             h = shortest
+    return h
+
+def total_sum(set1, set2):
+    h = 0
+    for p1 in set1:
+        shortest = float('inf')
+        for p2 in set2:
+            dist = euclid_distance(p1, p2)
+            if dist<shortest:
+                shortest = dist
+        h += shortest
     return h

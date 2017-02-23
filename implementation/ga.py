@@ -1,7 +1,7 @@
 import multiprocessing
 import numpy
 import random
-
+import math
 
 import algorithms
 from deap import base
@@ -10,63 +10,56 @@ from deap import tools
 
 from refmap import RefMap
 from scanreader import Scan
-from util import hausdorff, applytuple, graph_results
+from util import hausdorff, applytuple, graph_results, total_sum
 
-NGEN = 1
-POP = 1
-CXPB = 0.05
-MUTPB = 0.02
+NGEN = 1000
+POP = 100
+CXPB = 0.15
+MUTPB = 0.05
 
 MIN = -10
 MAX = 10
 
-# refmap = RefMap("data/combined.csv", samplesize=1000)
-refmap = RefMap("data/combined.csv")
-errorscan = Scan("data/scan0").scan_points
+TRANS_MIN, TRANS_MAX = -4.0, 4.0
+ROT_MIN, ROT_MAX = 0, math.pi
 
 
-def randfloat():
-    return random.uniform(-5, 5)
+refmap = RefMap("data/combined.csv", tolerance=0.2)
+errorscan = Scan("scans/scan110")
+print "Aiming for"
+print errorscan.posx, errorscan.posy, errorscan.rot
+
+
+# errorscan.scan_points.append((-2.184327,2.641909))
+# graph_results(refmap, errorscan.scan_points, (-2.184327,2.641909,1.1352500))
+# graph_results(refmap, errorscan.scan_points, (0,0,0))
 
 
 def evaluate(individual):
-    dataset = applytuple(errorscan, *individual)
-    return 1/(1+hausdorff(dataset, refmap.points)),
-
-
-def check_bounds(min, max):
-    def decorator(func):
-        def wrapper(*args, **kargs):
-            offspring = func(*args, **kargs)
-            for child in offspring:
-                for i in xrange(len(child)):
-                    if child[i] > max:
-                        child[i] = max
-                    elif child[i] < min:
-                        child[i] = min
-            return offspring
-        return wrapper
-    return decorator
-
+    dataset = applytuple(errorscan.scan_points, *individual)
+    return 1/(1+total_sum(dataset, refmap.points)),
 
 def main():
-    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-    creator.create("Individual", list, fitness=creator.FitnessMin)
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("attr_int", randfloat)
-    toolbox.register("individual", tools.initRepeat, creator.Individual,
-                     toolbox.attr_int, n=3)
+    toolbox.register("attr_trans", random.uniform, TRANS_MIN, TRANS_MAX)
+    toolbox.register("attr_rot", random.uniform, ROT_MIN, ROT_MAX)
+
+    toolbox.register("individual", tools.initCycle, creator.Individual,
+                 (toolbox.attr_trans, toolbox.attr_trans, toolbox.attr_rot), n=1)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.125, indpb=MUTPB)
+    # toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.125/2, indpb=MUTPB)
+    toolbox.register("mutate", tools.mutUniformInt, low=-1, up=1, indpb=MUTPB)
 
     toolbox.register("select", tools.selRoulette)
     toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
 
-    # pool = multiprocessing.Pool()
-    # toolbox.register("map", pool.map)
+    pool = multiprocessing.Pool()
+    toolbox.register("map", pool.map)
 
     stats = tools.Statistics(key=lambda ind: ind.fitness.values)
     stats.register("avg", numpy.mean, axis=0)
@@ -80,16 +73,21 @@ def main():
     pop = toolbox.population(n=POP)
     hof = tools.HallOfFame(5)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("min", numpy.min)
     stats.register("avg", numpy.mean)
     stats.register("std", numpy.std)
-    stats.register("min", numpy.min)
     stats.register("max", numpy.max)
 
     print "Starting"
     pop, log = algorithms.eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                    stats=stats, halloffame=hof, verbose=True)
     expr = tools.selBest(pop, 1)[0]
-    graph_results(refmap, errorscan, expr)
+    print "Aiming for"
+    print (errorscan.posx, errorscan.posy, errorscan.rot)
+    print "Result:"
+    print expr
+    graph_results(refmap, errorscan.scan_points, expr)
+    # graph_results(refmap, errorscan.scan_points, (errorscan.posx, errorscan.posy, errorscan.rot))
 
     # print len(self.points), samplesize
     # plt.figure("X/Y")

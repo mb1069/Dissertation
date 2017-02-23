@@ -11,7 +11,7 @@ reg = re.compile(
 class Scan:
 
     # Retrieve scan with cartesian coordinates relative to pose
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, absolute=False):
         try:
             if filename is not None:
                 f = open(filename, 'r')
@@ -22,13 +22,19 @@ class Scan:
                 self.posy = float(scan_loc[1])
                 self.rot = float(scan_loc[2])
                 self.scan_points = []
-                self.scan_points.append(polar2cartesian(scan_loc[3], scan_loc[4]))
+                if absolute:
+                    self.scan_points.append(polar2origincartesian(self, scan_loc[3], scan_loc[4]))
+                else:
+                    self.scan_points.append(polar2cartesian(scan_loc[3], scan_loc[4]))
 
                 line = f.readline()
                 # Data is in polar form 
                 while line:
                     coords = map(float, reg.findall(line)[0][5:7]) 
-                    self.scan_points.append(polar2cartesian(coords[0], coords[1]))
+                    if absolute:
+                        self.scan_points.append(polar2origincartesian(self, coords[0], coords[1]))
+                    else:
+                        self.scan_points.append(polar2cartesian(coords[0], coords[1]))
 
                     line = f.readline()
                 f.close()
