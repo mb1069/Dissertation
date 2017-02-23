@@ -8,8 +8,9 @@ from tqdm import tqdm
 def copy_scan(scan):
     return copy.deepcopy(scan)
 
-def graph_results(refmap, errorscan, transformation):
-    dataset = applytuple(errorscan, *transformation)
+def graph_results(refpoints, errorscan, transformation):
+    startdata = copy.deepcopy(errorscan)
+    finaldata = applytuple(errorscan, *transformation)
     fig = plt.figure("X/Y")
     plt.xlabel("x")
     plt.ylabel("y")
@@ -18,8 +19,10 @@ def graph_results(refmap, errorscan, transformation):
     plt.gca().set_aspect('equal', adjustable='box')
     ax1 = fig.add_subplot(111)
 
-    ax1.scatter([p[0] for p in dataset], [p[1] for p in dataset], s=2, c='r', marker='x')
-    ax1.scatter([p[0] for p in refmap.points], [p[1] for p in refmap.points], s=2, c='b', marker='x')
+    ax1.scatter([p[0] for p in startdata], [p[1] for p in startdata], s=2, c='r', marker='x')
+    ax1.scatter([p[0] for p in finaldata], [p[1] for p in finaldata], s=2, c='g', marker='x')
+    ax1.scatter([p[0] for p in refpoints], [p[1] for p in refpoints], s=2, c='b', marker='x')
+
     plt.show()
 
 

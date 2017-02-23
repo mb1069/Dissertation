@@ -12,7 +12,7 @@ from refmap import RefMap
 from scanreader import Scan
 from util import hausdorff, applytuple, graph_results, total_sum
 
-NGEN = 1000
+NGEN = 150
 POP = 100
 CXPB = 0.15
 MUTPB = 0.05
@@ -24,8 +24,15 @@ TRANS_MIN, TRANS_MAX = -4.0, 4.0
 ROT_MIN, ROT_MAX = 0, math.pi
 
 
-refmap = RefMap("data/combined.csv", tolerance=0.2)
-errorscan = Scan("scans/scan110")
+scanName = "scans/scan110"
+# Using full map
+refmap = RefMap("data/combined.csv", tolerance=0.2).points
+
+# Using error
+# refmap = Scan(scanName)
+# refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
+errorscan = Scan(scanName)
+
 print "Aiming for"
 print errorscan.posx, errorscan.posy, errorscan.rot
 
@@ -37,7 +44,8 @@ print errorscan.posx, errorscan.posy, errorscan.rot
 
 def evaluate(individual):
     dataset = applytuple(errorscan.scan_points, *individual)
-    return 1/(1+total_sum(dataset, refmap.points)),
+    return 1/(1+total_sum(dataset, refmap)),
+    # return 1/(1+hausdorff(dataset, refmap)),
 
 def main():
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -51,8 +59,8 @@ def main():
                  (toolbox.attr_trans, toolbox.attr_trans, toolbox.attr_rot), n=1)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    # toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.125/2, indpb=MUTPB)
-    toolbox.register("mutate", tools.mutUniformInt, low=-1, up=1, indpb=MUTPB)
+    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.125/4, indpb=MUTPB)
+    # toolbox.register("mutate", tools.mutUniformInt, low=-1, up=1, indpb=MUTPB)
 
     toolbox.register("select", tools.selRoulette)
     toolbox.register("mate", tools.cxOnePoint)
