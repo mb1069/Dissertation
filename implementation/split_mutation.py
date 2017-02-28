@@ -73,7 +73,7 @@ def main():
                  (toolbox.attr_trans, toolbox.attr_trans, toolbox.attr_rot), n=1)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    toolbox.register("mutate", tools.mutGaussian, sigma=0.125/4, mu=0, indpb=MUTPB)
+    toolbox.register("mutate", mutGaussian, tr_sigma=0.125/4, r_sigma=0.125/8, indpb=MUTPB)
     # toolbox.register("mutate", tools.mutUniformInt, low=-1, up=1, indpb=MUTPB)
 
     toolbox.register("select", tools.selRoulette)

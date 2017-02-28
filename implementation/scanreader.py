@@ -1,6 +1,6 @@
 import re
 import copy
-from util import polar2cartesian, polar2origincartesian
+from util import polar2cartesian, polar2origincartesian, subsample
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,7 +11,7 @@ reg = re.compile(
 class Scan:
 
     # Retrieve scan with cartesian coordinates relative to pose
-    def __init__(self, filename=None, absolute=False):
+    def __init__(self, filename=None, absolute=False, tolerance=0.1):
         try:
             if filename is not None:
                 f = open(filename, 'r')
@@ -41,6 +41,7 @@ class Scan:
         except ValueError as e:
             print "Error in file: ", filename
             raise e
+        self.scan_points = subsample(self.scan_points, tolerance)
 
     def getcopy(self):
         return copy.deepcopy(self)

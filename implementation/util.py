@@ -19,8 +19,8 @@ def graph_results(refpoints, errorscan, transformation):
     plt.gca().set_aspect('equal', adjustable='box')
     ax1 = fig.add_subplot(111)
 
-    ax1.scatter([p[0] for p in startdata], [p[1] for p in startdata], s=2, c='r', marker='x')
-    ax1.scatter([p[0] for p in finaldata], [p[1] for p in finaldata], s=2, c='g', marker='x')
+    ax1.scatter([p[0] for p in startdata], [p[1] for p in startdata], s=3, c='r', marker='x')
+    ax1.scatter([p[0] for p in finaldata], [p[1] for p in finaldata], s=3, c='g', marker='x')
     ax1.scatter([p[0] for p in refpoints], [p[1] for p in refpoints], s=2, c='b', marker='x')
 
     plt.show()
@@ -83,3 +83,25 @@ def total_sum(set1, set2):
                 shortest = dist
         h += shortest
     return h
+
+
+def subsample(points, tolerance):
+    newpoints = []
+    for p1 in points:
+        if not containsSimilar(newpoints, p1, tolerance):
+            newpoints.append(p1)
+    return newpoints
+
+
+def containsSimilar(set, p, tolerance):
+    for p2 in set:
+        if abs(p2[0]-p[0])<=tolerance and abs(p2[1]-p[1])<tolerance:
+            return True
+    return False
+
+
+def save_data(row, filename):
+    line = ",".join(map(str, row))
+    fd = open(filename, 'a+')
+    fd.write(line)
+    fd.close()
