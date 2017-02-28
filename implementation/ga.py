@@ -10,7 +10,7 @@ from deap import tools
 
 from refmap import RefMap
 from scanreader import Scan
-from util import hausdorff, applytuple, graph_results, total_sum, save_data
+from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
 from tqdm import trange
 
 NGEN = 150
@@ -24,18 +24,11 @@ MAX = 10
 TRANS_MIN, TRANS_MAX = -4.0, 4.0
 ROT_MIN, ROT_MAX = 0, math.pi
 
+scanName = None
+refmap = None
+errorscan = None
 
 scanName = "scans/scan110"
-# Using full map
-refmap = RefMap("data/combined.csv", tolerance=0.2).points
-
-# Using error
-# refmap = Scan(scanName)
-# refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
-errorscan = Scan(scanName, tolerance=0.2)
-
-print "Aiming for"
-print errorscan.posx, errorscan.posy, errorscan.rot
 
 
 # errorscan.scan_points.append((-2.184327,2.641909))
@@ -49,6 +42,9 @@ def evaluate(individual):
     # return 1/(1+hausdorff(dataset, refmap)),
 
 def main():
+    global scanName
+    global refmap
+    global errorscan
     parser = ap.ArgumentParser(description="My Script")
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--multicore", action='store_true')
@@ -57,10 +53,22 @@ def main():
     parser.add_argument("-v", action='store_true', default=False)
     parser.add_argument("--graph", action='store_true', default=False)
     # parser.add_argument("--max_gen", type=int)
+    parser.add_argument("--tolerance", type=float, default=0.2)
 
 
     args, leftovers = parser.parse_known_args()
 
+    
+    # Using full map
+    refmap = RefMap("data/combined.csv", tolerance=args.tolerance).points
+
+    # Using error
+    # refmap = Scan(scanName)
+    # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
+    errorscan = Scan(scanName, tolerance=args.tolerance)
+
+    print "Aiming for"
+    print errorscan.posx, errorscan.posy, errorscan.rot
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -107,7 +115,8 @@ def main():
                                        stats=stats, halloffame=hof, verbose=args.v)
         expr = tools.selBest(pop, 1)[0]
         if args.save is not None:
-            row = [record['avg'], record['max'], record['std'], expr, "\r"]
+            result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
+            row = [result[0], result[1], expr[0], expr[1], expr[2], "\r"]
             save_data(row, "results/"+args.save)
 
         if args.v:

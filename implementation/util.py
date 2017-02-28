@@ -60,6 +60,11 @@ def applytranslation(x, y, xErr, yErr):
 def euclid_distance(p1, p2):
     return np.linalg.norm(p1 - p2)
 
+def evaluate_solution(posX, posY, rot, targetX, targetY, targetRot):
+    solution = np.array((posX, posY))
+    target = np.array((targetX, targetY))
+    return (euclid_distance(solution, target), rot/targetRot)
+
 
 def hausdorff(set1, set2):
     h = 0
@@ -73,7 +78,7 @@ def hausdorff(set1, set2):
             h = shortest
     return h
 
-def total_sum(set1, set2):
+def total_sum(set1, set2, banded=False):
     h = 0
     for p1 in set1:
         shortest = float('inf')
@@ -81,8 +86,15 @@ def total_sum(set1, set2):
             dist = euclid_distance(p1, p2)
             if dist<shortest:
                 shortest = dist
-        h += shortest
+        h += apply_band(shortest) if banded else shortest
     return h
+
+def apply_band(dist):
+    if dist<=1: return dist
+    if 1<dist<=3: return dist * 2
+    if 3<dist<=5: return dist * 4
+    if 5<dist<=7: return dist * 8
+    if 7<dist: return dist * 16
 
 
 def subsample(points, tolerance):
