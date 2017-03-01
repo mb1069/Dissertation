@@ -13,16 +13,16 @@ from scanreader import Scan
 from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
 from tqdm import trange
 
-NGEN = 150
-POP = 100
+NGEN = 500
+POP = 500
 CXPB = 0.15
 MUTPB = 0.05
 
 MIN = -10
 MAX = 10
 
-TRANS_MIN, TRANS_MAX = -4.0, 4.0
-ROT_MIN, ROT_MAX = 0, math.pi
+TRANS_MIN, TRANS_MAX = -8.0, 8.0
+ROT_MIN, ROT_MAX = -math.pi, math.pi
 
 scanName = None
 refmap = None
@@ -32,7 +32,6 @@ scanName = "scans/scan110"
 
 
 # errorscan.scan_points.append((-2.184327,2.641909))
-# graph_results(refmap, errorscan.scan_points, (-2.184327,2.641909,1.1352500))
 # graph_results(refmap, errorscan.scan_points, (0,0,0))
 
 
@@ -49,7 +48,7 @@ def main():
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--multicore", action='store_true')
     # parser.add_argument("--seed")
-    parser.add_argument("--save", type=str, default="")
+    parser.add_argument("--save", type=str, default="temp.csv")
     parser.add_argument("-v", action='store_true', default=False)
     parser.add_argument("--graph", action='store_true', default=False)
     # parser.add_argument("--max_gen", type=int)
@@ -66,6 +65,10 @@ def main():
     # refmap = Scan(scanName)
     # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
     errorscan = Scan(scanName, tolerance=args.tolerance)
+
+
+#     graph_results(refmap, errorscan.scan_points, (-4.0466112179, 5.2727216101,-0.4485475159
+# ))
 
     print "Aiming for"
     print errorscan.posx, errorscan.posy, errorscan.rot
@@ -120,8 +123,8 @@ def main():
             save_data(row, "results/"+args.save)
 
         if args.v:
-            print "Result:"
-            print expr
+            print "Best individual:", expr
+            print "Fitness:", evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
 
         if args.graph:
             graph_results(refmap, errorscan.scan_points, expr)

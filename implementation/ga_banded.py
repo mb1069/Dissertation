@@ -13,16 +13,16 @@ from scanreader import Scan
 from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
 from tqdm import trange
 
-NGEN = 150
-POP = 100
+NGEN = 500
+POP = 500
 CXPB = 0.15
 MUTPB = 0.05
 
 MIN = -10
 MAX = 10
 
-TRANS_MIN, TRANS_MAX = -4.0, 4.0
-ROT_MIN, ROT_MAX = 0, math.pi
+TRANS_MIN, TRANS_MAX = -8.0, 8.0
+ROT_MIN, ROT_MAX = -math.pi, math.pi
 
 
 scanName = "scans/scan110"

@@ -109,7 +109,8 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
         print logbook.stream
 
     # Begin the generational process
-    for gen in trange(ngen, leave=False):
+    pbar = trange(ngen, leave=False)
+    for gen in pbar:
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population))
 
@@ -128,7 +129,8 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
 
         # Replace the current population by the offspring
         population[:] = offspring
-        # print tools.selBest(population, 1)[0]
+        desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
+        pbar.set_description(desc)
 
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}
