@@ -19,8 +19,8 @@ def graph_results(refpoints, errorscan, transformation):
     plt.gca().set_aspect('equal', adjustable='box')
     ax1 = fig.add_subplot(111)
 
-    # ax1.scatter([p[0] for p in startdata], [p[1] for p in startdata], s=3, c='r', marker='x')
-    # ax1.scatter([p[0] for p in finaldata], [p[1] for p in finaldata], s=3, c='g', marker='x')
+    ax1.scatter([p[0] for p in startdata], [p[1] for p in startdata], s=3, c='r', marker='x')
+    ax1.scatter([p[0] for p in finaldata], [p[1] for p in finaldata], s=3, c='g', marker='x')
     ax1.scatter([p[0] for p in refpoints], [p[1] for p in refpoints], s=4, c='b', marker='x')
 
     plt.show()
