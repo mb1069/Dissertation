@@ -91,8 +91,8 @@ def eaSimpleEarlyStop(population, toolbox, cxpb, mutpb, ngen, stats=None,
             print logbook.stream
         else:
             pbar.set_description(desc)
-
-    return record, logbook
+    expr = tools.selBest(pop, 1)[0]
+    return gen, toolbox.evaluate(expr)[0], expr[0], expr[1], expr[2]
 
 def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
              halloffame=None, verbose=__debug__):

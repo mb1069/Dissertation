@@ -115,10 +115,8 @@ def main():
         random.seed()
         record, log = eaSimpleEarlyStop(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                        stats=stats, halloffame=hof, verbose=args.v, stopval=0.1)
-        expr = tools.selBest(pop, 1)[0]
         if args.save is not None:
-            result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
-            row = [result[0], result[1], expr[0], expr[1], expr[2], "\r"]
+            row = [result[0], result[1], result[2], result[3], result[4], "\r"]
             save_data(row, "results/"+args.save)
 
         if args.v:
