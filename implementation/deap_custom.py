@@ -30,6 +30,69 @@ import random
 from deap import tools
 from deap import algorithms
 from tqdm import trange
+from operator import itemgetter
+
+def eaSimpleEarlyStop(population, toolbox, cxpb, mutpb, ngen, stats=None,
+             halloffame=None, verbose=__debug__, stopval=0.1):
+    logbook = tools.Logbook()
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    # Evaluate the individuals with an invalid fitness
+    invalid_ind = [ind for ind in population if not ind.fitness.valid]
+    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+
+    if halloffame is not None:
+        halloffame.update(population)
+
+    record = stats.compile(population) if stats else {}
+    logbook.record(gen=0, nevals=len(invalid_ind), **record)
+    if verbose:
+        print logbook.stream
+
+    # Begin the generational process
+
+    # Hide TQDM pbar if verbose, as logbook will be printed
+    pbar = range(0,ngen) if verbose else trange(ngen, leave=False)
+    for gen in pbar:
+        # Select the next generation individuals
+        offspring = toolbox.select(population, len(population))
+
+        # Vary the pool of individuals
+        offspring = algorithms.varAnd(offspring, toolbox, cxpb, mutpb)
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        # Early stopping 
+        maxfit = max(fitnesses, key=itemgetter(0))[0]
+        if maxfit>=stopval:
+            break
+
+
+        # Update the hall of fame with the generated individuals
+        if halloffame is not None:
+            halloffame.update(offspring)
+
+        # Replace the current population by the offspring
+        population[:] = offspring
+        desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
+        
+
+        # Append the current generation statistics to the logbook
+        record = stats.compile(population) if stats else {}
+        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        if verbose:
+            print logbook.stream
+        else:
+            pbar.set_description(desc)
+
+    return record, logbook
 
 def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
              halloffame=None, verbose=__debug__):
@@ -109,7 +172,9 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
         print logbook.stream
 
     # Begin the generational process
-    pbar = trange(ngen, leave=False)
+
+    # Hide TQDM pbar if verbose, as logbook will be printed
+    pbar = range(0,ngen) if verbose else trange(ngen, leave=False)
     for gen in pbar:
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population))
@@ -130,18 +195,20 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
         # Replace the current population by the offspring
         population[:] = offspring
         desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
-        pbar.set_description(desc)
+        
 
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}
         logbook.record(gen=gen, nevals=len(invalid_ind), **record)
         if verbose:
             print logbook.stream
+        else:
+            pbar.set_description(desc)
 
     return record, logbook
 
 
-def mutGaussian(individual, tr_sigma, r_sigma, indpb):
+def mutSplitGaussian(individual, tr_sigma, r_sigma, indpb):
     """This function applies a gaussian tr_mutation of mean *tr_mu* and standard
     deviation *tr_sigma* on the input individual. This tr_mutation expects a
     :term:`sequence` individual composed of real valued attributes.

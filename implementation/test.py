@@ -5,7 +5,7 @@ from refmap import RefMap
 # Draws GA pose estimation from best individual
 scanName = "scans/scan110"
 tolerance = 0.2
-individual = (-2.45697176655,2.85781308878,1.03606367248,)
+individual = (-2.184327,2.641909,1.135250)
 
 refmap = RefMap("data/combined.csv", tolerance=tolerance).points
 errorscan = Scan(scanName, tolerance=tolerance)

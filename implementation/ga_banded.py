@@ -3,7 +3,7 @@ import numpy
 import random
 import math
 import argparse as ap
-from deap_custom import eaSimple, mutGaussian
+from deap_custom import eaSimple
 from deap import base
 from deap import creator
 from deap import tools
@@ -13,8 +13,8 @@ from scanreader import Scan
 from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
 from tqdm import trange
 
-NGEN = 500
-POP = 500
+NGEN = 100
+POP = 100
 CXPB = 0.15
 MUTPB = 0.05
 
@@ -56,10 +56,14 @@ def main():
     parser.add_argument("--save", type=str, default="")
     parser.add_argument("-v", action='store_true', default=False)
     parser.add_argument("--graph", action='store_true', default=False)
-    # parser.add_argument("--max_gen", type=int)
+    parser.add_argument("--pop", type=int, default=200)
+    parser.add_argument("--gen", type=int, default=200)
 
 
     args, leftovers = parser.parse_known_args()
+
+    NGEN = args.gen
+    POP = args.pop
 
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))

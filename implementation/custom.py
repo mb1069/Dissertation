@@ -3,7 +3,7 @@ import numpy
 import random
 import math
 import argparse as ap
-from deap_custom import eaSimple
+from deap_custom import eaSimpleEarlyStop
 from deap import base
 from deap import creator
 from deap import tools
@@ -13,8 +13,8 @@ from scanreader import Scan
 from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
 from tqdm import trange
 
-NGEN = 200
-POP = 200
+NGEN = 100
+POP = 100
 CXPB = 0.15
 MUTPB = 0.05
 
@@ -62,7 +62,6 @@ def main():
     NGEN = args.gen
     POP = args.pop
 
-
     
     # Using full map
     refmap = RefMap("data/combined.csv", tolerance=args.tolerance).points
@@ -99,21 +98,23 @@ def main():
     if args.multicore:
         pool = multiprocessing.Pool()
         toolbox.register("map", pool.map)
+    logbook = tools.Logbook()
+    logbook.header = "gen", "avg", "max", "min", "std"
 
     pop = toolbox.population(n=POP)
     hof = tools.HallOfFame(5)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("max", numpy.max)
-    stats.register("min", numpy.min)
     stats.register("avg", numpy.mean)
+    stats.register("min", numpy.min)
     stats.register("std", numpy.std)
     
 
     print "Starting"
     for x in trange(args.iterations):
         random.seed()
-        record, log = eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
-                                       stats=stats, halloffame=hof, verbose=args.v)
+        record, log = eaSimpleEarlyStop(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
+                                       stats=stats, halloffame=hof, verbose=args.v, stopval=0.1)
         expr = tools.selBest(pop, 1)[0]
         if args.save is not None:
             result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
