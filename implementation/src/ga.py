@@ -1,17 +1,19 @@
 import multiprocessing
-import numpy
+import numpy as np
 import random
 import math
 import argparse as ap
-from deap_custom import eaSimple
+import copy
+from tqdm import trange, tqdm
 from deap import base
 from deap import creator
 from deap import tools
 
-from refmap import RefMap
-from scanreader import Scan
-from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
-from tqdm import trange
+from util.deap_custom import eaSimple
+from util.refmap import RefMap
+from util.scanreader import Scan
+from util.util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
+
 
 NGEN = 200
 POP = 200
@@ -40,44 +42,7 @@ def evaluate(individual):
     return 1/(1+total_sum(dataset, refmap)),
     # return 1/(1+hausdorff(dataset, refmap)),
 
-def main():
-    global scanName
-    global refmap
-    global errorscan
-    parser = ap.ArgumentParser(description="My Script")
-    parser.add_argument("--iterations", type=int, default=1)
-    parser.add_argument("--multicore", action='store_true')
-    # parser.add_argument("--seed")
-    parser.add_argument("--save", type=str, default="temp.csv")
-    parser.add_argument("-v", action='store_true', default=False)
-    parser.add_argument("--graph", action='store_true', default=False)
-    # parser.add_argument("--max_gen", type=int)
-    parser.add_argument("--tolerance", type=float, default=0.2)
-    parser.add_argument("--pop", type=int, default=200)
-    parser.add_argument("--gen", type=int, default=200)
-
-
-    args, leftovers = parser.parse_known_args()
-
-    NGEN = args.gen
-    POP = args.pop
-
-
-    
-    # Using full map
-    refmap = RefMap("data/combined.csv", tolerance=args.tolerance).points
-
-    # Using error
-    # refmap = Scan(scanName)
-    # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
-    errorscan = Scan(scanName, tolerance=args.tolerance)
-
-
-#     graph_results(refmap, errorscan.scan_points, (-4.0466112179, 5.2727216101,-0.4485475159
-# ))
-
-    print "Aiming for"
-    print errorscan.posx, errorscan.posy, errorscan.rot
+def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -91,41 +56,58 @@ def main():
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     toolbox.register("mutate", tools.mutGaussian, sigma=0.125/4, mu=0, indpb=MUTPB)
-    # toolbox.register("mutate", tools.mutUniformInt, low=-1, up=1, indpb=MUTPB)
-
-    toolbox.register("select", tools.selRoulette)
+    toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
-    if args.multicore:
+    if multicore:
         pool = multiprocessing.Pool()
         toolbox.register("map", pool.map)
 
     pop = toolbox.population(n=POP)
     hof = tools.HallOfFame(5)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("max", numpy.max)
-    stats.register("min", numpy.min)
-    stats.register("avg", numpy.mean)
-    stats.register("std", numpy.std)
+    stats.register("max", np.max)
+    stats.register("min", np.min)
+    stats.register("avg", np.mean)
+    stats.register("std", np.std)
     
 
-    print "Starting"
-    for x in trange(args.iterations):
-        random.seed()
-        record, log = eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
-                                       stats=stats, halloffame=hof, verbose=args.v)
-        expr = tools.selBest(pop, 1)[0]
-        if args.save is not None:
-            result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
-            row = [result[0], result[1], expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "results/"+args.save)
-
-        if args.v:
-            print "Best individual:", expr
-            print "Fitness:", evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
-
-        if args.graph:
-            graph_results(refmap, errorscan.scan_points, expr)
+    random.seed()
+    record, log = eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
+                                   stats=stats, halloffame=hof, verbose=args.v)
+    expr = tools.selBest(pop, 1)[0]
+    if verb:
+        print "Best individual:", expr
+        print "Fitness:", evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
+    return evaluate(expr)[0], record, log, expr
 
 if __name__ == "__main__":
-    main()
+
+    parser = ap.ArgumentParser(description="My Script")
+    parser.add_argument("--iterations", type=int, default=1)
+    parser.add_argument("--multicore", action='store_true')
+    # parser.add_argument("--seed")
+    parser.add_argument("--save", type=str, default="temp.csv")
+    parser.add_argument("-v", action='store_true', default=False)
+    parser.add_argument("--graph", action='store_true', default=False)
+    # parser.add_argument("--max_gen", type=int)
+    parser.add_argument("--tolerance", type=float, default=0.2)
+    parser.add_argument("--pop", type=int, default=200)
+    parser.add_argument("--gen", type=int, default=200)
+
+    args, leftovers = parser.parse_known_args()
+    # Using full map
+    refmap = RefMap("../data/combined.csv", tolerance=args.tolerance).points
+
+    # Using error
+    # refmap = Scan(scanName)
+    # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
+    errorscan = Scan("../"+scanName, tolerance=args.tolerance)
+
+    print "Aiming for"
+    print errorscan.posx, errorscan.posy, errorscan.rot
+    for x in trange(args.iterations):
+        best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB)
+        if args.save is not None:
+            row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
+            save_data(row, "../results/"+args.save)
