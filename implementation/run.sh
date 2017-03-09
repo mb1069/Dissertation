@@ -1,0 +1,15 @@
+python ga.py --iterations 30 --multicore --gen 500 --pop 100 --save "500-100gafull.csv" &
+python ga.py --iterations 30 --multicore --gen 400 --pop 100 --save "400-100gafull.csv" &
+python ga.py --iterations 30 --multicore --gen 300 --pop 100 --save "300-100gafull.csv" &
+python ga.py --iterations 30 --multicore --gen 200 --pop 100 --save "200-100gafull.csv" &
+python ga.py --iterations 30 --multicore --gen 100 --pop 100 --save "100-100gafull.csv" &
+python ga_banded.py --iterations 30 --multicore --gen 500 --pop 100 --save "500-100gabanded.csv" &
+python ga_banded.py --iterations 30 --multicore --gen 400 --pop 100 --save "400-100gabanded.csv" &
+python ga_banded.py --iterations 30 --multicore --gen 300 --pop 100 --save "300-100gabanded.csv" &
+python ga_banded.py --iterations 30 --multicore --gen 200 --pop 100 --save "200-100gabanded.csv" &
+python ga_banded.py --iterations 30 --multicore --gen 100 --pop 100 --save "100-100gabanded.csv" &
+python split_mutation.py --iterations 30 --multicore --gen 500 --pop 100 --save "500-100split_mutation.csv" &
+python split_mutation.py --iterations 30 --multicore --gen 400 --pop 100 --save "400-100split_mutation.csv" &
+python split_mutation.py --iterations 30 --multicore --gen 300 --pop 100 --save "300-100split_mutation.csv" &
+python split_mutation.py --iterations 30 --multicore --gen 200 --pop 100 --save "200-100split_mutation.csv" &
+python split_mutation.py --iterations 30 --multicore --gen 100 --pop 100 --save "100-100split_mutation.csv" &
