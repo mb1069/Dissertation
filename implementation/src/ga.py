@@ -56,7 +56,7 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     toolbox.register("mutate", tools.mutGaussian, sigma=0.125/4, mu=0, indpb=MUTPB)
-    toolbox.register("select", tools.selTournament, tournsize=3)
+    toolbox.register("select", tools.selTournament, tournsize=3, k=POP)
     toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
     if multicore:
@@ -96,12 +96,13 @@ if __name__ == "__main__":
     parser.add_argument("--gen", type=int, default=200)
 
     args, leftovers = parser.parse_known_args()
+
     # Using full map
     refmap = RefMap("../data/combined.csv", tolerance=args.tolerance).points
 
     # Using error
-    # refmap = Scan(scanName)
-    # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
+    # refmap = Scan("../"+scanName, tolerance=args.tolerance)
+    # refmap = applytuple(refmap.scan_points, -2.5, 2.5, 1.3)
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
 
     print "Aiming for"
@@ -109,5 +110,6 @@ if __name__ == "__main__":
     for x in trange(args.iterations):
         best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB)
         if args.save is not None:
-            row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
+            success = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
+            row = [best_fitness, success[0], success[1], expr[0], expr[1], expr[2], "\r"]
             save_data(row, "../results/"+args.save)
