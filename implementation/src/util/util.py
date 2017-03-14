@@ -138,3 +138,39 @@ def save_data(row, filename):
     fd = open(filename, 'a+')
     fd.write(line)
     fd.close()
+
+def initPop(POP, map, constr):
+    minX = min([x[0] for x in map])
+    minY = min([x[1] for x in map])    
+    maxX = max([x[0] for x in map])
+    maxY = max([x[1] for x in map])
+    dimX = float(maxX - minX)
+    dimY = float(maxY - minY)
+    POP = float(POP)
+    Xpoints = int(math.sqrt(((dimX*POP)/dimY)+(math.pow(dimX-dimY, 2)/(4*(dimY**2))))-((dimX-dimY)/(2*dimY)))
+    Ypoints = int(POP/(Xpoints))
+
+    Xstep = dimX/(Xpoints-1)
+    Ystep = dimY/(Ypoints-1)
+    pop = []
+    for x in range(Xpoints):
+        for y in range(Ypoints):
+            for rot in range(0,4):
+                ind = constr([(x*Xstep) + minX, (y*Ystep)+ minY, 0])
+                pop.append(ind)
+
+    # # plt.ion()
+    # fig = plt.figure("X/Y")
+    # plt.xlabel("x")
+    # plt.ylabel("y")
+    # plt.xlim(-10, 10)
+    # plt.ylim(-10, 10)
+    # plt.gca().set_aspect('equal', adjustable='box')
+    # ax1 = fig.add_subplot(111)
+
+    # pop_series = ax1.scatter([p[0] for p in pop], [p[1] for p in pop], s=3, c='r', marker='x')
+    # # ax1.scatter(target[0], target[1], s=3, c='g', marker='x')
+    # ax1.scatter([p[0] for p in map], [p[1] for p in map], s=4, c='b', marker='x')  
+    # plt.show()
+    return pop
+
