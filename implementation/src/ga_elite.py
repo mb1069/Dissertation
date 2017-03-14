@@ -8,11 +8,11 @@ from tqdm import trange, tqdm
 from deap import base
 from deap import creator
 from deap import tools
+from deap import algorithms
 
-from util.deap_custom import eaSimple
 from util.refmap import RefMap
 from util.scanreader import Scan
-from util.util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
+from util.util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution, graph_gen, update_series
 
 
 NGEN = 200
@@ -29,7 +29,7 @@ ROT_MIN, ROT_MAX = -math.pi, math.pi
 scanName = None
 refmap = None
 errorscan = None
-
+target = None
 scanName = "scans/scan110"
 
 
@@ -41,6 +41,115 @@ def evaluate(individual):
     dataset = applytuple(errorscan.scan_points, *individual)
     return 1/(1+total_sum(dataset, refmap)),
     # return 1/(1+hausdorff(dataset, refmap)),
+
+def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
+                   stats=None, halloffame=None, verbose=__debug__):
+    logbook = tools.Logbook()
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    # Evaluate the individuals with an invalid fitness
+    invalid_ind = [ind for ind in population if not ind.fitness.valid]
+    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+
+    if halloffame is not None:
+        halloffame.update(population)
+
+    record = stats.compile(population) if stats is not None else {}
+    logbook.record(gen=0, nevals=len(invalid_ind), **record)
+    if verbose:
+        print logbook.stream
+
+    graph, pop_series = graph_gen(refmap, population, target)
+    pbar = range(0,ngen) if verbose else trange(ngen, leave=False)
+    for gen in pbar:
+        # Vary the population
+        offspring = algorithms.varOr(population, toolbox, lambda_, cxpb, mutpb)
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        # Update the hall of fame with the generated individuals
+        if halloffame is not None:
+            halloffame.update(offspring)
+
+        # Select the next generation population
+        population[:] = toolbox.select(population + offspring, mu)
+
+        # Update the statistics with the new population
+        record = stats.compile(population) if stats is not None else {}
+        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        update_series(graph, pop_series, population)
+
+        if verbose:
+            print logbook.stream
+        else:
+            desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
+            pbar.set_description(desc)
+
+    return record, logbook
+
+def eaSimpleElite(population, toolbox, cxpb, mutpb, ngen, stats=None,
+             halloffame=None, verbose=__debug__):
+    logbook = tools.Logbook()
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    # Evaluate the individuals with an invalid fitness
+    invalid_ind = [ind for ind in population if not ind.fitness.valid]
+    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+
+    if halloffame is not None:
+        halloffame.update(population)
+
+    record = stats.compile(population) if stats else {}
+    logbook.record(gen=0, nevals=len(invalid_ind), **record)
+    if verbose:
+        print logbook.stream
+
+    # Begin the generational process
+
+    # Hide TQDM pbar if verbose, as logbook will be printed
+    pbar = range(0,ngen) if verbose else trange(ngen, leave=False)
+    for gen in pbar:
+        # Select the next generation individuals
+        offspring = toolbox.select(population)
+
+        # Vary the pool of individuals
+        offspring = algorithms.varAnd(offspring, toolbox, cxpb, mutpb)
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        # Update the hall of fame with the generated individuals
+        if halloffame is not None:
+            halloffame.update(offspring)
+
+        # Replace the current population by the offspring
+        population[:] = offspring
+        desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
+        if verbose:
+            print tools.selBest(population, 1)[0]
+
+        # Append the current generation statistics to the logbook
+        record = stats.compile(population) if stats else {}
+        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        if gen%5 == 0:
+            graph_gen(refmap, population, target)
+        if verbose:
+            print logbook.stream
+        else:
+            pbar.set_description(desc)
+
+    return record, logbook
 
 def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -54,7 +163,7 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
                  (toolbox.attr_trans, toolbox.attr_trans, toolbox.attr_rot), n=1)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    toolbox.register("mutate", tools.mutGaussian, sigma=0.125/2, mu=0, indpb=MUTPB)
+    toolbox.register("mutate", tools.mutGaussian, sigma=0.25, mu=0, indpb=MUTPB)
     # toolbox.register("mutate", tools.mutUniformInt, low=-1, up=1, indpb=MUTPB)
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("mate", tools.cxOnePoint)
@@ -70,10 +179,9 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     stats.register("min", np.min)
     stats.register("avg", np.mean)
     stats.register("std", np.std)
-    
 
     random.seed()
-    record, log = eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
+    record, log = eaMuPlusLambda(pop, toolbox, mu=int(POP*0.7), lambda_=int(POP*0.3), cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                    stats=stats, halloffame=hof, verbose=args.v)
     expr = tools.selBest(pop, 1)[0]
     if verb:
@@ -102,8 +210,10 @@ if __name__ == "__main__":
     # refmap = Scan(scanName)
     # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
+    target = (errorscan.posx, errorscan.posy, errorscan.rot)
     print "Aiming for"
-    print errorscan.posx, errorscan.posy, errorscan.rot
+    print target
+
 
     for x in trange(args.iterations):
         best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB)

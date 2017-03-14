@@ -109,7 +109,7 @@ if __name__ == "__main__":
     print "Aiming for"
     print errorscan.posx, errorscan.posy, errorscan.rot
 
-    for MUTPB in tqdm(np.arange(0.05, 0.8, 0.05)):
+    for MUTPB in tqdm(np.arange(0.45, 0.8, 0.05)):
         for x in trange(args.iterations):
             best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB)
             if args.save is not None:

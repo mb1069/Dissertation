@@ -56,7 +56,7 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
     toolbox.register("mutate", tools.mutGaussian, sigma=0.125/4, mu=0, indpb=MUTPB)
-    toolbox.register("select", tools.selTournament, tournsize=3, k=POP)
+    toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
     if multicore:

@@ -14,3 +14,7 @@ submission/
 .idea/
 *.toc
 
+*.pyc
+*.gz
+report/report.synctex.gz
+
