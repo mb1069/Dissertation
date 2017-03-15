@@ -69,14 +69,11 @@ def polar2cartesian(dist, ang):
     ang = float(ang)
     return np.array((dist * math.cos(ang), dist * math.sin(ang)))
 
-
 def applyrotation(x, y, rotErr):
     return (x * math.cos(rotErr)) - y * (math.sin(rotErr)), (x * math.sin(rotErr)) + y * (math.cos(rotErr))
 
-
 def applytranslation(x, y, xErr, yErr):
     return x + xErr, y + yErr
-
 
 def euclid_distance(p1, p2):
     return np.linalg.norm(p1 - p2)
@@ -109,6 +106,9 @@ def total_sum(set1, set2, banded=False):
                 shortest = dist
         h += apply_band(shortest) if banded else shortest
     return h
+
+def lookup_total_sum(refmap, dataset):
+    return sum(map(refmap.evaluatePoint, dataset))
 
 def apply_band(dist):
     if dist<=1: return dist
