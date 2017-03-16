@@ -42,7 +42,7 @@ scanName = "scans/scan110"
 
 def evaluate(individual):
     dataset = applytuple(errorscan.scan_points, *individual)
-    return 1/(1+lookup_total_sum(refmap, dataset)),
+    return lookup_total_sum(refmap, dataset),
     # return 1/(1+hausdorff(dataset, refmap)),
 
 def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
@@ -82,7 +82,8 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     if verb:
         print "Best individual:", expr
         print "Fitness:", evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
-    return evaluate(expr)[0], record, log, expr
+    best_result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
+    return best_result, record, log, expr
 
 if __name__ == "__main__":
     parser = ap.ArgumentParser(description="My Script") 
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     # parser.add_argument("--max_gen", type=int) 
     parser.add_argument("--tolerance", type=float, default=0.2) 
     parser.add_argument("--pop", type=int, default=200)
-    parser.add_argument("--gen", type=int, default=200)
+    parser.add_argument("--gen", type=int, default=50)
 
     args, leftovers = parser.parse_known_args()
 

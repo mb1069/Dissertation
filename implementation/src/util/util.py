@@ -81,7 +81,7 @@ def euclid_distance(p1, p2):
 def evaluate_solution(posX, posY, rot, targetX, targetY, targetRot):
     solution = np.array((posX, posY))
     target = np.array((targetX, targetY))
-    return (euclid_distance(solution, target), rot/targetRot)
+    return (euclid_distance(solution, target), abs(rot-targetRot))
 
 
 def hausdorff(set1, set2):
