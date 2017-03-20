@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import os
 import math
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -8,6 +9,9 @@ from tqdm import tqdm
 def copy_scan(scan):
     return copy.deepcopy(scan)
 
+def pickledMapExists(pickle_file_name):
+    return os.path.exists(pickle_file_name)
+    
 def graph_results(refpoints, errorscan, transformation):
     startdata = copy.deepcopy(errorscan)
     finaldata = applytuple(errorscan, *transformation)

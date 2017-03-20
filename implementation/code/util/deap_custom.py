@@ -31,6 +31,8 @@ from deap import tools
 from deap import algorithms
 from tqdm import trange
 from operator import itemgetter
+from util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution, graph_gen, update_series, initPop
+
 
 def eaSimpleEarlyStop(population, toolbox, cxpb, mutpb, ngen, stats=None,
              halloffame=None, verbose=__debug__, stopval=0.1):
@@ -98,7 +100,7 @@ def eaSimpleEarlyStop(population, toolbox, cxpb, mutpb, ngen, stats=None,
 
 
 def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
-             halloffame=None, verbose=__debug__):
+             halloffame=None, verbose=__debug__, graph=False):
     logbook = tools.Logbook()
     logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
 
@@ -116,6 +118,9 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
     logbook.record(gen=0, nevals=len(invalid_ind), **record)
     if verbose:
         print logbook.stream
+
+    if graph:
+        graph, pop_series = graph_gen(refmap, population, target)
 
     # Begin the generational process
 
@@ -141,6 +146,9 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
         # Replace the current population by the offspring
         population[:] = offspring
         desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
+        if graph:
+            update_series(graph, pop_series, population)
+
         if verbose:
             print tools.selBest(population, 1)[0]
 
@@ -153,6 +161,93 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
             pbar.set_description(desc)
 
     return record, logbook
+
+def varOrZeno(population, toolbox, lambda_, cxpb, mutpb, progress, mu, sigma):
+    """Part of an evolutionary algorithm applying only the variation part
+    (crossover, mutation **or** reproduction). The modified individuals have
+    their fitness invalidated. The individuals are cloned so returned
+    population is independent of the input population.
+    :param population: A list of individuals to vary.
+    :param toolbox: A :class:`~deap.base.Toolbox` that contains the evolution
+                    operators.
+    :param lambda\_: The number of children to produce
+    :param cxpb: The probability of mating two individuals.
+    :param mutpb: The probability of mutating an individual.
+    :returns: The final population
+    :returns: A class:`~deap.tools.Logbook` with the statistics of the
+              evolution
+    The variation goes as follow. On each of the *lambda_* iteration, it
+    selects one of the three operations; crossover, mutation or reproduction.
+    In the case of a crossover, two individuals are selected at random from
+    the parental population :math:`P_\mathrm{p}`, those individuals are cloned
+    using the :meth:`toolbox.clone` method and then mated using the
+    :meth:`toolbox.mate` method. Only the first child is appended to the
+    offspring population :math:`P_\mathrm{o}`, the second child is discarded.
+    In the case of a mutation, one individual is selected at random from
+    :math:`P_\mathrm{p}`, it is cloned and then mutated using using the
+    :meth:`toolbox.mutate` method. The resulting mutant is appended to
+    :math:`P_\mathrm{o}`. In the case of a reproduction, one individual is
+    selected at random from :math:`P_\mathrm{p}`, cloned and appended to
+    :math:`P_\mathrm{o}`.
+    This variation is named *Or* beceause an offspring will never result from
+    both operations crossover and mutation. The sum of both probabilities
+    shall be in :math:`[0, 1]`, the reproduction probability is
+    1 - *cxpb* - *mutpb*.
+    """
+    assert (cxpb + mutpb) <= 1.0, (
+        "The sum of the crossover and mutation probabilities must be smaller "
+        "or equal to 1.0.")
+
+    offspring = []
+    for _ in xrange(lambda_):
+        op_choice = random.random()
+        if op_choice < cxpb:            # Apply crossover
+            ind1, ind2 = map(toolbox.clone, random.sample(population, 2))
+            ind1, ind2 = toolbox.mate(ind1, ind2)
+            del ind1.fitness.values
+            offspring.append(ind1)
+        elif op_choice < cxpb + mutpb:  # Apply mutation
+            ind = toolbox.clone(random.choice(population))
+            ind, = tools.mutGaussian(ind, mu, sigma*max(progress,0.4), mutpb)
+            del ind.fitness.values
+            offspring.append(ind)
+        else:                           # Apply reproduction
+            offspring.append(random.choice(population))
+
+    return offspring
+
+# def mutGaussianZeno(individual, mu, sigma, indpb):
+#     """This function applies a gaussian mutation of mean *mu* and standard
+#     deviation *sigma* on the input individual. This mutation expects a
+#     :term:`sequence` individual composed of real valued attributes.
+#     The *indpb* argument is the probability of each attribute to be mutated.
+    
+#     :param individual: Individual to be mutated.
+#     :param mu: Mean or :term:`python:sequence` of means for the
+#                gaussian addition mutation.
+#     :param sigma: Standard deviation or :term:`python:sequence` of 
+#                   standard deviations for the gaussian addition mutation.
+#     :param indpb: Independent probability for each attribute to be mutated.
+#     :returns: A tuple of one individual.
+    
+#     This function uses the :func:`~random.random` and :func:`~random.gauss`
+#     functions from the python base :mod:`random` module.
+#     """
+#     size = len(individual)
+#     if not isinstance(mu, Sequence):
+#         mu = repeat(mu, size)
+#     elif len(mu) < size:
+#         raise IndexError("mu must be at least the size of individual: %d < %d" % (len(mu), size))
+#     if not isinstance(sigma, Sequence):
+#         sigma = repeat(sigma, size)
+#     elif len(sigma) < size:
+#         raise IndexError("sigma must be at least the size of individual: %d < %d" % (len(sigma), size))
+    
+#     for i, m, s in zip(xrange(size), mu, sigma):
+#         if random.random() < indpb:
+#             individual[i] += random.gauss(m, s)
+    
+#     return individual,
 
 
 def mutSplitGaussian(individual, tr_sigma, r_sigma, indpb):

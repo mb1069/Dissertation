@@ -1,16 +1,16 @@
 import math
 import multiprocessing as mp
-import os
+import os, sys
 from tqdm import trange, tqdm
 import numpy as np
 import argparse as ap
 
 sys.path.append('../src/util')
 
-from ga import evaluate
-from refmap import RefMap
-from scanreader import Scan
-from util import applytuple, total_sum, save_data
+# from src.ga import evaluate
+from util.refmap import RefMap
+from util.scanreader import Scan
+from util.util import applytuple, total_sum, save_data
 
 
 """
@@ -21,29 +21,30 @@ refmap = None
 filename = None
 def evaluate(individual, errorscan, refmap):
     dataset = applytuple(errorscan.scan_points, *individual)
-    return 1/(1+total_sum(dataset, refmap)),
+    return 1.0/(1.0+float(total_sum(dataset, refmap))),
 
 def evaluate_pose(ind):
 	fitness = evaluate(ind, errorscan, refmap)[0]
 	row = [ind[0], ind[1], ind[2], str(fitness),"\r"]
-	save_data(row, "results/"+filename)
+	save_data(row, "../results/"+filename)
 
-def main(scan_name):
+def main():
 	global errorscan
 	global refmap
 	global filename
 
 	parser = ap.ArgumentParser(description="My Script")
-	parser.add_argument("--savefile", type=str, default="landscape.csv")
+	parser.add_argument("--savefilefile", type=str, default="landscape.csv")
+	parser.add_argument("--scan", type=str, default="scan110")
 	parser.add_argument("-v", action='store_true', default=False)
 	parser.add_argument("--graph", action='store_true', default=False)
 	parser.add_argument("--tolerance", type=float, default=0.2)
 
 	args, leftovers = parser.parse_known_args()
 
-	scanName = "scans/"+scan_name
-	refmap = RefMap("data/combined.csv", tolerance=args.tolerance).points
-	filename = "landscape_multirot.csv"
+	scanName = "../scans/"+args.scan
+	refmap = RefMap("../data/combined.csv", tolerance=args.tolerance).points
+	filename = args.savefile
 
 
 	errorscan = Scan(scanName, tolerance=args.tolerance)
@@ -63,6 +64,4 @@ def main(scan_name):
 		pass
 
 if __name__=="__main__":
-	for x in trange(0, 500, 25):
-		scanName = "scan"+str(x)
-		main(scanName)
+	main()

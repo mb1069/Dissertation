@@ -45,6 +45,7 @@ def evaluate(individual):
 def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
 
 
+
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--multicore", action='store_true')
     # parser.add_argument("--seed")
-    parser.add_argument("--save", type=str, default="temp.csv")
+    parser.add_argument("--savefile", type=str, default="temp.csv")
     parser.add_argument("-v", action='store_true', default=False)
     parser.add_argument("--graph", action='store_true', default=False)
     # parser.add_argument("--max_gen", type=int)
@@ -106,12 +107,12 @@ if __name__ == "__main__":
     # refmap = Scan(scanName)
     # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
+
     print "Aiming for"
     print errorscan.posx, errorscan.posy, errorscan.rot
-
-    for MUTPB in tqdm(np.arange(0.65, 0.8, 0.05)):
+    for NGEN in tqdm(np.arange(450, 500, 50)):
         for x in trange(args.iterations):
             best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB)
             if args.save is not None:
-                row = [MUTPB, best_fitness, expr[0], expr[1], expr[2], "\r"]
+                row = [NGEN, best_fitness, expr[0], expr[1], expr[2], "\r"]
                 save_data(row, "../results/"+args.save)

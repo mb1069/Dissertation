@@ -4,18 +4,15 @@ import random
 import math
 import argparse as ap
 import copy
-
 from tqdm import trange, tqdm
 from deap import base
 from deap import creator
 from deap import tools
-from deap import algorithms
 
-from util.lookupmap import LookupRefMap
 from util.deap_custom import eaSimple
 from util.refmap import RefMap
 from util.scanreader import Scan
-from util.util import hausdorff, applytuple, graph_results, lookup_total_sum, save_data, evaluate_solution
+from util.util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution
 
 
 NGEN = 200
@@ -42,7 +39,7 @@ scanName = "scans/scan110"
 
 def evaluate(individual):
     dataset = applytuple(errorscan.scan_points, *individual)
-    return lookup_total_sum(refmap, dataset),
+    return 1/(1+total_sum(dataset, refmap)),
     # return 1/(1+hausdorff(dataset, refmap)),
 
 def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
@@ -62,7 +59,6 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
-
     if multicore:
         pool = multiprocessing.Pool()
         toolbox.register("map", pool.map)
@@ -75,6 +71,7 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     stats.register("avg", np.mean)
     stats.register("std", np.std)
     
+
     random.seed()
     record, log = eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                    stats=stats, halloffame=hof, verbose=args.v)
@@ -82,26 +79,26 @@ def main(multicore, NGEN, POP, scan, map, CXPB, MUTPB, verb):
     if verb:
         print "Best individual:", expr
         print "Fitness:", evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
-    best_result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
-    return best_result, record, log, expr
+    return evaluate(expr)[0], record, log, expr
 
 if __name__ == "__main__":
-    parser = ap.ArgumentParser(description="My Script") 
-    parser.add_argument("--iterations", type=int, default=1) 
-    parser.add_argument("--multicore", action='store_true', default=False) 
-    # parser.add_argument("--seed") 
-    parser.add_argument("--save", type=str, default="temp.csv") 
-    parser.add_argument("-v", action='store_true', default=False) 
-    parser.add_argument("--graph", action='store_true', default=False) 
-    # parser.add_argument("--max_gen", type=int) 
-    parser.add_argument("--tolerance", type=float, default=0.2) 
+
+    parser = ap.ArgumentParser(description="My Script")
+    parser.add_argument("--iterations", type=int, default=1)
+    parser.add_argument("--multicore", action='store_true')
+    # parser.add_argument("--seed")
+    parser.add_argument("--savefile", type=str, default="temp.csv")
+    parser.add_argument("-v", action='store_true', default=False)
+    parser.add_argument("--graph", action='store_true', default=False)
+    # parser.add_argument("--max_gen", type=int)
+    parser.add_argument("--tolerance", type=float, default=0.2)
     parser.add_argument("--pop", type=int, default=200)
-    parser.add_argument("--gen", type=int, default=50)
+    parser.add_argument("--gen", type=int, default=200)
 
     args, leftovers = parser.parse_known_args()
 
     # Using full map
-    refmap = LookupRefMap("../data/combined.csv", 10000000, tolerance=args.tolerance)
+    refmap = RefMap("../data/combined.csv", tolerance=args.tolerance).points
 
     # Using error
     # refmap = Scan("../"+scanName, tolerance=args.tolerance)

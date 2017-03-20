@@ -12,6 +12,7 @@ from deap import algorithms
 
 from util.refmap import RefMap
 from util.scanreader import Scan
+from util.deap_custom import varOrZeno
 from util.util import hausdorff, applytuple, graph_results, total_sum, save_data, evaluate_solution, graph_gen, update_series, initPop
 
 
@@ -42,7 +43,7 @@ def evaluate(individual):
     return 1/(1+total_sum(dataset, refmap)),
     # return 1/(1+hausdorff(dataset, refmap)),
 
-def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
+def eaMuPlusLambdaZeno(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, mu_mean, mu_sigma,
                    stats=None, halloffame=None, verbose=__debug__, graph=False):
     logbook = tools.Logbook()
     logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
@@ -65,7 +66,8 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
     pbar = range(0,ngen) if verbose else trange(ngen, leave=False)
     for gen in pbar:
         # Vary the population
-        offspring = algorithms.varOr(population, toolbox, lambda_, cxpb, mutpb)
+        progress = float(gen)/float(ngen)
+        offspring = varOrZeno(population, toolbox, lambda_, cxpb, mutpb, 1-progress, mu_mean, mu_sigma)
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
@@ -86,7 +88,6 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
 
         if graph:
             update_series(graph, pop_series, population)
-
         if verbose:
             print logbook.stream
         else:
@@ -95,73 +96,7 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
 
     return record, logbook
 
-# def eaSimpleElite(population, toolbox, cxpb, mutpb, ngen, stats=None,
-#              halloffame=None, verbose=__debug__):
-#     logbook = tools.Logbook()
-#     logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
-
-#     # Evaluate the individuals with an invalid fitness
-#     invalid_ind = [ind for ind in population if not ind.fitness.valid]
-#     fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-#     for ind, fit in zip(invalid_ind, fitnesses):
-#         ind.fitness.values = fit
-
-#     if halloffame is not None:
-#         halloffame.update(population)
-
-#     record = stats.compile(population) if stats else {}
-#     logbook.record(gen=0, nevals=len(invalid_ind), **record)
-#     if verbose:
-#         print logbook.stream
-
-#     # Begin the generational process
-
-#     # Hide TQDM pbar if verbose, as logbook will be printed
-#     pbar = range(0,ngen) if verbose else trange(ngen, leave=False)
-#     for gen in pbar:
-#         # Select the next generation individuals
-#         offspring = toolbox.select(population)
-
-#         # Vary the pool of individuals
-#         offspring = algorithms.varAnd(offspring, toolbox, cxpb, mutpb)
-
-#         # Evaluate the individuals with an invalid fitness
-#         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-#         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-#         for ind, fit in zip(invalid_ind, fitnesses):
-#             ind.fitness.values = fit
-
-#         # Update the hall of fame with the generated individuals
-#         if halloffame is not None:
-#             halloffame.update(offspring)
-
-#         # Replace the current population by the offspring
-#         population[:] = offspring
-#         desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
-#         if verbose:
-#             print tools.selBest(population, 1)[0]
-
-#         # Append the current generation statistics to the logbook
-#         record = stats.compile(population) if stats else {}
-#         logbook.record(gen=gen, nevals=len(invalid_ind), **record)
-#         if gen%5 == 0:
-#             graph_gen(refmap, population, target)
-#         if verbose:
-#             print logbook.stream
-#         else:
-#             pbar.set_description(desc)
-
-#     return record, logbook
-
-
-# def initIndividual(icls, content):
-#     return icls(content)
-
-# def initPopulation(pcls, ind_init):
-#     contents = initPop(200, refmap)
-#     return pcls(ind_init(c) for c in contents)
-
-def main(multicore, NGEN, POP, refmap, CXPB, MUTPB, verb, grid, graph):
+def main(multicore, NGEN, POP, refmap, MUTPB, mu_mean, mu_sigma, verb, grid, graph):
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
@@ -177,7 +112,6 @@ def main(multicore, NGEN, POP, refmap, CXPB, MUTPB, verb, grid, graph):
         pop = initPop(POP, refmap, creator.Individual)
     else:
         pop = toolbox.population(n=POP)
-    toolbox.register("mutate", tools.mutGaussian, sigma=0.5, mu=0, indpb=MUTPB)
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("evaluate", evaluate)
@@ -194,8 +128,7 @@ def main(multicore, NGEN, POP, refmap, CXPB, MUTPB, verb, grid, graph):
     stats.register("std", np.std)
 
     random.seed()
-    record, log = eaMuPlusLambda(pop, toolbox, mu=int(POP*0.7), lambda_=int(POP*0.3), cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
-                                   stats=stats, halloffame=hof, verbose=args.v, graph=graph)
+    record, log = eaMuPlusLambdaZeno(pop, toolbox, mu=int(POP*0.7), lambda_=int(POP*0.3), cxpb=CXPB, mutpb=MUTPB, ngen=NGEN, mu_mean=mu_mean, mu_sigma=mu_sigma, stats=stats, halloffame=hof, verbose=args.v, graph=graph)
     expr = tools.selBest(pop, 1)[0]
     if verb:
         print "Best individual:", expr
@@ -208,7 +141,7 @@ if __name__ == "__main__":
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--multicore", action='store_true')
     # parser.add_argument("--seed")
-    parser.add_argument("--save", type=str, default="temp.csv")
+    parser.add_argument("--savefile", type=str, default="temp.csv")
     parser.add_argument("-v", action='store_true', default=False)
     parser.add_argument("--disp", action='store_true', default=False)
     # parser.add_argument("--max_gen", type=int)
@@ -230,7 +163,7 @@ if __name__ == "__main__":
 
 
     for x in trange(args.iterations):
-        best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
+        best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, MUTPB=MUTPB, mu_mean=0, mu_sigma=1, grid=args.grid, graph=args.graph)
         if args.save is not None:
             row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
             save_data(row, "../results/"+args.save)

@@ -48,7 +48,7 @@ def main():
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--multicore", action='store_true')
     # parser.add_argument("--seed")
-    parser.add_argument("--save", type=str, default="temp.csv")
+    parser.add_argument("--savefile", type=str, default="temp.csv")
     parser.add_argument("-v", action='store_true', default=False)
     parser.add_argument("--graph", action='store_true', default=False)
     # parser.add_argument("--max_gen", type=int)
