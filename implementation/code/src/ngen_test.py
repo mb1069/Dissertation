@@ -113,6 +113,6 @@ if __name__ == "__main__":
     for NGEN in tqdm(np.arange(450, 500, 50)):
         for x in trange(args.iterations):
             best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB)
-            if args.save is not None:
+            if args.savefile is not None:
                 row = [NGEN, best_fitness, expr[0], expr[1], expr[2], "\r"]
-                save_data(row, "../results/"+args.save)
+                save_data(row, "../results/"+args.savefile)

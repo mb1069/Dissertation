@@ -19,10 +19,13 @@ from util.util import hausdorff, applytuple, graph_results, total_sum, save_data
 NGEN = 200
 POP = 200
 CXPB = 0.0
-MUTPB = 0.8
+MUTPB = 1.0
 
 MIN = -10
 MAX = 10
+elite = 0.5
+
+
 
 TRANS_MIN, TRANS_MAX = -8.0, 8.0
 ROT_MIN, ROT_MAX = -math.pi, math.pi
@@ -128,7 +131,7 @@ def main(multicore, NGEN, POP, refmap, MUTPB, mu_mean, mu_sigma, verb, grid, gra
     stats.register("std", np.std)
 
     random.seed()
-    record, log = eaMuPlusLambdaZeno(pop, toolbox, mu=int(POP*0.7), lambda_=int(POP*0.3), cxpb=CXPB, mutpb=MUTPB, ngen=NGEN, mu_mean=mu_mean, mu_sigma=mu_sigma, stats=stats, halloffame=hof, verbose=args.v, graph=graph)
+    record, log = eaMuPlusLambdaZeno(pop, toolbox, mu=int(POP*elite), lambda_=int(POP*(1-elite)), cxpb=CXPB, mutpb=MUTPB, ngen=NGEN, mu_mean=mu_mean, mu_sigma=mu_sigma, stats=stats, halloffame=hof, verbose=args.v, graph=graph)
     expr = tools.selBest(pop, 1)[0]
     if verb:
         print "Best individual:", expr
@@ -161,9 +164,10 @@ if __name__ == "__main__":
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
     target = (errorscan.posx, errorscan.posy, errorscan.rot)
 
+    save_data([__file__, "pop:"+str(args.pop), "gen:"+str(args.gen), "grid:"+str(args.grid), "\r"], "../results/"+args.savefile)
 
     for x in trange(args.iterations):
         best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, MUTPB=MUTPB, mu_mean=0, mu_sigma=1, grid=args.grid, graph=args.graph)
-        if args.save is not None:
+        if args.savefile is not None:
             row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "../results/"+args.save)
+            save_data(row, "../results/"+args.savefile)

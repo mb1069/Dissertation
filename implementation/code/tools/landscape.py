@@ -44,7 +44,7 @@ def main():
 
 	scanName = "../scans/"+args.scan
 	refmap = RefMap("../data/combined.csv", tolerance=args.tolerance).points
-	filename = args.savefile
+	filename = args.savefilefile
 
 
 	errorscan = Scan(scanName, tolerance=args.tolerance)

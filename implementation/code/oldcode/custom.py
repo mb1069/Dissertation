@@ -115,9 +115,9 @@ def main():
         random.seed()
         record, log = eaSimpleEarlyStop(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                        stats=stats, halloffame=hof, verbose=args.v, stopval=0.1)
-        if args.save is not None:
+        if args.savefile is not None:
             row = [result[0], result[1], result[2], result[3], result[4], "\r"]
-            save_data(row, "results/"+args.save)
+            save_data(row, "results/"+args.savefile)
 
         if args.v:
             print "Best individual:", expr

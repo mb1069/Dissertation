@@ -57,7 +57,7 @@ def main():
 		pickle.dump(refmap, open(pickle_file_name, "wb"))
 		print "Loaded and pickled map for further use"
 
-	filename = args.savefile
+	filename = args.savefilefile
 
 
 	errorscan = Scan(scanName, tolerance=args.tolerance)

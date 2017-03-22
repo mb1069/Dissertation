@@ -178,6 +178,7 @@ if __name__ == "__main__":
         pickle.dump(refmap, open(pickle_file_name, "wb"))
         print "Loaded and pickled map for further use"
 
+    save_data([__file__, "pop:"+str(args.pop), "gen:"+str(args.gen), "grid:"+str(args.grid), "numcells:"+str(args.numcells), "\r"], "../results/"+args.savefile)
 
     # Using full map
 
@@ -185,6 +186,6 @@ if __name__ == "__main__":
     target = (errorscan.posx, errorscan.posy, errorscan.rot)
     for x in trange(args.iterations):
         best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, scan=copy.deepcopy(errorscan), map=refmap, CXPB=CXPB, MUTPB=MUTPB, graph=args.graph)
-        if args.save is not None:
+        if args.savefile is not None:
             row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "../results/"+args.save)
+            save_data(row, "../results/"+args.savefile)

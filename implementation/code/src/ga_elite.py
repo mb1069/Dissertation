@@ -18,7 +18,8 @@ from util.util import hausdorff, applytuple, graph_results, total_sum, save_data
 NGEN = 200
 POP = 200
 CXPB = 0.0
-MUTPB = 0.8
+MUTPB = 1.0
+elite = None
 
 MIN = -10
 MAX = 10
@@ -194,7 +195,7 @@ def main(multicore, NGEN, POP, refmap, CXPB, MUTPB, verb, grid, graph):
     stats.register("std", np.std)
 
     random.seed()
-    record, log = eaMuPlusLambda(pop, toolbox, mu=int(POP*0.7), lambda_=int(POP*0.3), cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
+    record, log = eaMuPlusLambda(pop, toolbox, mu=int(POP*elite), lambda_=int(POP),  cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                    stats=stats, halloffame=hof, verbose=args.v, graph=graph)
     expr = tools.selBest(pop, 1)[0]
     if verb:
@@ -227,10 +228,12 @@ if __name__ == "__main__":
     # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
     target = (errorscan.posx, errorscan.posy, errorscan.rot)
-
-
-    for x in trange(args.iterations):
-        best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
-        if args.save is not None:
-            row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "../results/"+args.save)
+    els= [0.6, 0.7, 0.8]
+    for el in els:
+        elite = el
+        save_data([__file__, "elite:"+str(elite), "pop:"+str(args.pop), "gen:"+str(args.gen), "grid:"+str(args.grid), "\r"], "../results/"+args.savefile)
+        for x in trange(args.iterations):
+            best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
+            if args.savefile is not None:
+                row = [elite, best_fitness, expr[0], expr[1], expr[2], "\r"]
+                save_data(row, "../results/"+args.savefile)

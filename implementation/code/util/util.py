@@ -38,8 +38,9 @@ def graph_gen(refpoints, pop, target):
     plt.ylim(-10, 10)
     plt.gca().set_aspect('equal', adjustable='box')
     ax1 = fig.add_subplot(111)
-
+    ax1.clear()
     pop_series = ax1.scatter([p[0] for p in pop], [p[1] for p in pop], s=3, c='r', marker='x')
+   
     ax1.scatter(target[0], target[1], s=3, c='g', marker='x')
     ax1.scatter([p[0] for p in refpoints], [p[1] for p in refpoints], s=4, c='b', marker='x')  
     plt.show()

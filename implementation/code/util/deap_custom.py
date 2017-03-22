@@ -208,7 +208,7 @@ def varOrZeno(population, toolbox, lambda_, cxpb, mutpb, progress, mu, sigma):
             offspring.append(ind1)
         elif op_choice < cxpb + mutpb:  # Apply mutation
             ind = toolbox.clone(random.choice(population))
-            ind, = tools.mutGaussian(ind, mu, sigma*max(progress,0.4), mutpb)
+            ind, = tools.mutGaussian(ind, mu, sigma*max(progress,0.2), mutpb)
             del ind.fitness.values
             offspring.append(ind)
         else:                           # Apply reproduction

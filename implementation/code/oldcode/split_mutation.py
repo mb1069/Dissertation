@@ -109,10 +109,10 @@ def main():
         record, log = eaSimple(pop, toolbox, cxpb=CXPB, mutpb=MUTPB, ngen=NGEN,
                                        stats=stats, halloffame=hof, verbose=args.v)
         expr = tools.selBest(pop, 1)[0]
-        if args.save is not None:
+        if args.savefile is not None:
             result = evaluate_solution(expr[0], expr[1], expr[2], errorscan.posx, errorscan.posy, errorscan.rot)
             row = [result[0], result[1], expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "results/"+args.save)
+            save_data(row, "results/"+args.savefile)
 
         if args.v:
             print "Result:"
