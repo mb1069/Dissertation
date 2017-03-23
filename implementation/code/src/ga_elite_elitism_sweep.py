@@ -19,7 +19,7 @@ NGEN = 200
 POP = 200
 CXPB = 0.0
 MUTPB = 1.0
-elite = 0.8
+elite = 0.1
 
 MIN = -10
 MAX = 10
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     parser.add_argument("--disp", action='store_true', default=False)
     # parser.add_argument("--max_gen", type=int)
     parser.add_argument("--tolerance", type=float, default=0.2)
-    parser.add_argument("--pop", type=int, default=200)
+    parser.add_argument("--pop", type=int, default=50)
     parser.add_argument("--gen", type=int, default=50)
     parser.add_argument("--grid", action='store_true', default=False)
     parser.add_argument("--graph", action='store_true', default=False)
@@ -229,9 +229,10 @@ if __name__ == "__main__":
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
     target = (errorscan.posx, errorscan.posy, errorscan.rot)
     save_data([__file__, "elite:"+str(elite), "pop:"+str(args.pop), "gen:"+str(args.gen), "grid:"+str(args.grid), "\r"], "../results/"+args.savefile)
-    
-    for x in trange(args.iterations):
-        best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
-        if args.savefile is not None:
-            row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "../results/"+args.savefile)
+    for el in tqdm([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]):
+        elite = el
+        for x in trange(args.iterations):
+            best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
+            if args.savefile is not None:
+                row = [elite, best_fitness, expr[0], expr[1], expr[2], "\r"]
+                save_data(row, "../results/"+args.savefile)

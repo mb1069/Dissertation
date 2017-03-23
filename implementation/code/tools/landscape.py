@@ -26,6 +26,8 @@ def evaluate(individual, errorscan, refmap):
 def evaluate_pose(ind):
 	fitness = evaluate(ind, errorscan, refmap)[0]
 	row = [ind[0], ind[1], ind[2], str(fitness),"\r"]
+	print row
+	raw_input()
 	save_data(row, "../results/"+filename)
 
 def main():
@@ -34,7 +36,7 @@ def main():
 	global filename
 
 	parser = ap.ArgumentParser(description="My Script")
-	parser.add_argument("--savefilefile", type=str, default="landscape.csv")
+	parser.add_argument("--savefile", type=str, default="landscape.csv")
 	parser.add_argument("--scan", type=str, default="scan110")
 	parser.add_argument("-v", action='store_true', default=False)
 	parser.add_argument("--graph", action='store_true', default=False)
@@ -44,13 +46,17 @@ def main():
 
 	scanName = "../scans/"+args.scan
 	refmap = RefMap("../data/combined.csv", tolerance=args.tolerance).points
-	filename = args.savefilefile
+	filename = args.savefile
 
 
 	errorscan = Scan(scanName, tolerance=args.tolerance)
-	xs = map(float, np.arange(-8, 8, 0.25))
-	ys = map(float, np.arange(-8, 8, 0.25))
+	xs = map(float, np.arange(-2.5, -2, 0.01))
+	ys = map(float, np.arange(2.5, 3, 0.01))
 	rots = map(float, np.arange(-math.pi, math.pi, math.pi/12))
+	# -2.184327,2.641909,1.135250
+	xs = [-2.184327]
+	ys = [2.641909]
+	rots = [1.135250]
 	total = len(xs) * len(ys) * len(rots)
 	step = len(rots)
 	inds = []

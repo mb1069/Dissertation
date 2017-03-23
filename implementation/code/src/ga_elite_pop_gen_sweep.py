@@ -228,10 +228,10 @@ if __name__ == "__main__":
     # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
     target = (errorscan.posx, errorscan.posy, errorscan.rot)
-    save_data([__file__, "elite:"+str(elite), "pop:"+str(args.pop), "gen:"+str(args.gen), "grid:"+str(args.grid), "\r"], "../results/"+args.savefile)
-    
-    for x in trange(args.iterations):
-        best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = args.pop, NGEN = args.gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
-        if args.savefile is not None:
-            row = [best_fitness, expr[0], expr[1], expr[2], "\r"]
-            save_data(row, "../results/"+args.savefile)
+    for pop in tqdm([50, 100, 150, 200, 250, 300, 350, 400, 450, 500]):
+        for gen in tqdm([50, 100, 150, 200, 250, 300, 350, 400, 450, 500]):
+            for x in trange(args.iterations):
+                best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = pop, NGEN = gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
+                if args.savefile is not None:
+                    row = [pop, gen, best_fitness, expr[0], expr[1], expr[2], "\r"]
+                    save_data(row, "../results/"+args.savefile)
