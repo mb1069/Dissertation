@@ -4,6 +4,8 @@ import random
 import math
 import argparse as ap
 import copy
+from timeit import default_timer as timer
+
 from tqdm import trange, tqdm
 from deap import base
 from deap import creator
@@ -91,7 +93,7 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
         if verbose:
             print logbook.stream
         else:
-            desc = str(toolbox.evaluate(tools.selBest(population, 1)[0])[0])
+            desc = "pop: "+str(len(population)) + " gen: "+str(ngen)
             pbar.set_description(desc)
 
     return record, logbook
@@ -228,10 +230,12 @@ if __name__ == "__main__":
     # refmap = applytuple(refmap.scan_points, refmap.posx, refmap.posy, refmap.rot)
     errorscan = Scan("../"+scanName, tolerance=args.tolerance)
     target = (errorscan.posx, errorscan.posy, errorscan.rot)
-    for pop in tqdm([50, 100, 150, 200, 250, 300, 350, 400, 450, 500]):
-        for gen in tqdm([50, 100, 150, 200, 250, 300, 350, 400, 450, 500]):
+    for pop in tqdm([100, 150, 200, 250, 300, 350, 400]):
+        for gen in tqdm([50, 100, 150, 200, 250, 300, 350, 400]):
             for x in trange(args.iterations):
+                start = timer()
                 best_fitness, record, log, expr = main(multicore = args.multicore, verb=args.v, POP = pop, NGEN = gen, refmap=refmap, CXPB=CXPB, MUTPB=MUTPB, grid=args.grid, graph=args.graph)
+                stop = timer()
                 if args.savefile is not None:
-                    row = [pop, gen, best_fitness, expr[0], expr[1], expr[2], "\r"]
+                    row = [pop, gen, best_fitness[0]*best_fitness[1], stop-start, expr[0], expr[1], expr[2], "\r"]
                     save_data(row, "../results/"+args.savefile)
