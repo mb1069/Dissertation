@@ -228,6 +228,63 @@ The trade-off in accuracy, computational requirements and system complexity offe
 \chapter{System design}
 \label{cha:system_design}
 
+\section{Objectives}
+\label{sec:objectives}
+The algorithm we aim to implement should improve on existing solutions in 3 ways:
+\begin{itemize}
+	\item Improve the accuracy and precision of the estimated pose
+	\item Reduce the computational time required to produce this pose
+\end{itemize}
+In order to evaluate the relative improvements of our algorithm, we will first re-implement the best existing GA (non-lookup) [AND THEN GLASM?] as follows.
+
+\section{Methodology to evaluate algorithms}
+\subsection{Test data}
+The data used to evaluate our algorithms is taken from Lenac [CITATION NEEDED]\'s recent publication, where a robot's exploration of a room was simulated using the Player-Stage software. This produced a series of scan scenarios, each composed of a verifiable scan pose (x, y, rotation) and polar scan coordinates (distance, rotation): these coordinates mimics the data format obtained from a Li-Dar scanner. The map of the environment (into which our algorithm will locate itself) was created from these scans by computing the absolute position of each scan point, before compiling them into a single set of Cartesian data. This was achieved using a Python script \lstinline{combiner.py} [TODO RENAME COMBINER.PY TO SOMETHING MORE REASONABLE).
+
+A single scan was utilised throughout the design of algorithm to facilitate the quick evaluation of solutions, and was picked due to the presence of multiple corners pointing to the scan location: this would cause some complexity in the algorithm's ability to correctly select the rotation [GRAPH SCAN110 AND MAP] in a difficult environment. This would provide some robustness of the algorithm to repeated patterns, but additional tests on a larger set of scans was produced to evaluate our final algorithm against benchmarks [TODO EVALUATE FINAL SOLUTION ACROSS MANY MORE SCANS]
+
+\subsection{Hardware}
+The algorithms were evaluated on the YARCC compute cluster, which provides job-based dedicated processing nodes for each execution of the algorithm. This allows us to rapidly evaluate each algorithm many times and allowing us to brute force the algorithm's parameters given our test data. Additionally, the implementation of the cluster allows us to reliably measure the execution time of our algorithms, thereby allowing us to evaluate their practicability for real-world applications.
+
+\section{Benchmark algorithm}
+\label{sec:benchmark}
+\subsection{Algorithm overview}
+An existing GA by 
+% [CITATION NEEDED] 
+was chosen as a benchmark genetic algorithm for the purpose of this project. It consists of .... [ADD DETAILS HERE]
+
+To ensure the fitness function's global maxima matches our scan location, the function was evaluated across a set of poses which blanket the map. The maximal fitness value at a given X/Y coordinate (across all tested rotations) was graphed in the charts below, demonstrating that the algorithm's peaks roughly matches the target pose for that scan (given the resolution of the set of poses); this demonstrates that the algorithm's fitness will be proportional to the pose's precision, and therefore should allow the GA to evolve towards the correct pose.
+
+\subsection{Parameter optimisation}
+\subsubsection{Population \& Generations}
+As expected, allowing the algorithm to evolve a larger population with/or for a larger number of generations provides improvements to the fitness of the solution provided.
+% [3D GRAPH OF POP_GEN HERE]
+  However, these require an impractically large computational power 
+% [INSERT EXCESSIVE EXECUTION TIME EXAMPLE HERE, ON MULTICORE PROCESSOR] 
+which would be unavailable on most small robots 
+% [CITATION NEEDED]. 
+Therefore, creating a rapid algorithm would greatly reduce the implementation costs, whilst also minimising the complexity of the hardware. Evaluating algorithms using a small population and number of generations will also present a difficult challenge for algorithms, allowing the difference in convergence speeds to be accentuated. 
+
+\subsubsection{Mutation \& Crossover}
+The mutation and crossover probabilities for our benchmark were found using 30 runs of the algorithm across a range of parameters as seen in 
+% [INSERT MUT_CXPB graph].
+ This found an optimal parameter of CXPB= and MUTPB=, with near-equivalent parameters at much higher values 
+ % [TO DISCUSS].
+
+\section{Algorithm design}
+\subsection{Key features}
+The algorithm aims to achieve the goals defined \autoref{sec:objectives} through a series of independent improvements described in the following sections. These are the use of elitism selection strategies (\autoref{subsec:elitism_sel}), pre-emptively organising the population of individuals (\autoref{subsec:grid_based_feature}) and finally the use of a convergent mutation operator (\autoref{subsec:zeno_mutation}).
+
+\subsection{Elitism selection}
+\label{subsec:elitism_sel}
+As seen in the 3d charts of the fitness landscapes seen in \autoref{}
+
+\subsection{Grid-based initial population}
+\label{subsec:grid_based_feature}
+
+\subsection{Converging mutation rates}
+\label{subsec:zeno_mutation}
+
 \bibliographystyle{unsrt}
 \bibliography{references}
 
