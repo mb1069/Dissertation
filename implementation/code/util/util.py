@@ -125,7 +125,7 @@ def apply_band(dist):
 
 def subsample(points, tolerance):
     newpoints = []
-    for p1 in points:
+    for p1 in tqdm(points):
         if not containsSimilar(newpoints, p1, tolerance):
             newpoints.append(p1)
     return newpoints
