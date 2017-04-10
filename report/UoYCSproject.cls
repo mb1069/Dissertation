@@ -51,6 +51,8 @@
 \RequirePackage{fixltx2e}
 \RequirePackage{ifthen}
 
+\RequirePackage[margin=2cm]{geometry}
+
 \pagestyle{headings}
 \renewcommand{\partpagestyle}{empty}
 

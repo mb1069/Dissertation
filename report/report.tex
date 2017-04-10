@@ -5,11 +5,13 @@
     \pgfplotsset{%
     	% every tick label/.append style={scale=1.5},
         compat=newest,%
-        /pgf/number format/use comma,%
+        % /pgf/number format/use comma,%
         /pgf/number format/1000 sep={\,},%
         /pgf/number format/min exponent for 1000 sep=4}
 \usepgfplotslibrary{statistics}
 
+
+\areaset{445pt}{610pt}
 \usepackage{mathtools}
 \usepackage[numbers]{natbib}
 \usepackage{filecontents}
@@ -21,14 +23,14 @@
 \usepackage{cleveref}
 \usepackage{wrapfig}
 \usepackage{multicol}
+\usepackage{float}
 
 \usepackage{subcaption} 
-
 \author{Miguel D. Boland}
 \title{Evolutionary algorithms for indoor localisation}
 \date{\today}
 \supervisor{Leandro S. Indrusiak}
-\MIP
+\MEng
 \wordcount{wordcount}
 
 % \includes{Appendices \ref{cha:usefulpackages}, \ref{cha:gotchas} and
@@ -142,7 +144,6 @@ The development of the IDC algorithm by \citet{Lu1997-zv} focused on the same is
 
 \subsection{Polar Scan Matching}
 \label{subsec:psm}
-%TODO how to apply this to scan->map?
 Polar scan matching \citet{Diosi2005-nv} utilises the same concept as IDC by adapting the ICP algorithm to use polar coordinates in an effort of minimising computational requirements. After pre-processing each scan to remove inconsistent data (due to moving objects) and segmenting the points according to a threshold criteria, the current scan is re-projected from the reference position (as demonstrated in \autoref{fig:polar_projection}, and the remaining translation and orientation is then iteratively improved. This method therefore benefits from the direct use of raw data from a laser scanner, in addition to a reduction in the dimensionality of the problem through matching the bearings of the polar data by distance. 
 
 \begin{figure}[t]
@@ -163,7 +164,7 @@ The usage of the Hausdorff distance was introduced by \citet{Donoso-Aguirre2008-
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\textwidth,keepaspectratio]{images/hausdorff.png}
+	\includegraphics[width=0.5\textwidth,keepaspectratio]{images/hausdorff.png}
 
 	\caption{Hausdorff distance between points in two scans.. Source: \citet{Donoso-Aguirre2008-pb}.}
 	\label{fig:hausdorff}
@@ -241,7 +242,7 @@ This tool also allowed for the sub-sampling of data such that the $O((m+n)^2)$  
 
 We should note that the data utilised had no explicit scale: this can be estimated using the specifications of an off-the-shelf Li-Dar range finder \cite{noauthor_undated-bu}. Assuming the robot in our dataset had an equivalent range of 40 meters, the longest distance measured in the data is approximately 6; this can be established as the maximal range of the sensor as the scans do not form complete loops (i.e: if a scan was attempted towards a further point, no data is returned at that angle). Therefore the virtual unit utilised throughout this project is equivalent to approximately 6.6 meters.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \begin{subfigure}[b]{0.30\textwidth}
 	\resizebox{\linewidth}{!}{
 		\begin{tikzpicture}{1cm}
@@ -276,7 +277,7 @@ We should note that the data utilised had no explicit scale: this can be estimat
 \label{fig:map_density}
 
 \end{figure}
-A single scan was utilised throughout the design of the algorithm to facilitate the quick evaluation of solutions, and was picked due to the presence of multiple corners pointing to the scan location: this would cause some complexity in the algorithm's ability to correctly select the rotation in a difficult environment. The scan, it's pose and This would provide some robustness of the algorithm to repeated patterns, but additional tests on a larger set of scans was produced to evaluate our final algorithm against benchmark algorithms. [TODO EVALUATE FINAL SOLUTION ACROSS MANY MORE SCANS]
+A single scan was utilised throughout the design of the algorithm to facilitate the quick evaluation of solutions, and was picked due to the presence of multiple corners pointing to the scan location: this would cause some complexity in the algorithm's ability to correctly select the rotation in a difficult environment. The scan, it's pose and This would provide some robustness of the algorithm to repeated patterns, but additional tests on a larger set of scans was produced to evaluate our final algorithm against benchmark algorithms.
 
 \begin{figure}
 \begin{subfigure}[b]{0.5\textwidth}
@@ -329,38 +330,40 @@ To ensure the fitness function's global maxima matches our scan location, the fu
 
 \section{Parameter optimisation}
 \subsection{Population \& Generations}
-As expected, allowing the algorithm to evolve a larger population with/or for a larger number of generations provides improvements to the fitness of the solution provided. However, these require an impractically large computational power 
-% [INSERT EXCESSIVE EXECUTION TIME EXAMPLE HERE, ON MULTICORE PROCESSOR] 
-which would be unavailable on most small robots 
-% [CITATION NEEDED]. 
-Therefore, creating a rapid algorithm would greatly reduce the implementation costs, whilst also minimising the complexity of the hardware. Evaluating algorithms using a small population and number of generations will also present a difficult challenge for algorithms, allowing the difference in convergence speeds to be accentuated. 
+As expected, allowing the algorithm to evolve a larger population with/or for a larger number of generations provides improvements to the fitness of the solution provided. However, these require an impractically large computational power: as we can see in \autoref{fig:ga_pop_gen}, a simple evolution of 50 generations with a population of 50 requires an average 37 seconds, on a 16 core machine. As the computational power requirements increase linearly with the number of generations and population size, these would become prohibitevely expensive to run in a real time environment. As such, evaluating algorithms using a small population and number of generations will also present a difficult challenge for algorithms, allowing the difference in convergence speeds to be accentuated. , whilst also enabling us to run our experiments in a timely manner to compare algorithms. 
+\begin{figure}[]
+\centering
+	\includegraphics[width=9cm,keepaspectratio]{images/ga_pop_gen_sweep.png}
+	\caption{Execution time of the benchmark GA using scan110 and various number of generations and population sizes. (see \autoref{fig:scan110} for scan and pose positions)}
+	\label{fig:ga_pop_gen}
+\end{figure}
 
 \subsection{Mutation \& Crossover}
 \label{subsec:benchmark_mutpb_cxpb}
-The mutation and crossover probabilities for our benchmark were found using 30 runs of the algorithm across a range of parameters as seen in \autoref{fig:ga_cxpb_mutpb}.
+The mutation and crossover probabilities for our benchmark were found using 60 pose estimations using scan110, our map, and benchmark algorithm with each combination of parametres across a range, as seen in \autoref{fig:ga_cxpb_mutpb}. This high sample number was done to ensure the robustness of the solution, establishing a hard benchmark for our subsequent algorithm comparisons.
 
-\begin{figure}[ht]
+\begin{figure}[]
 \centering
 	\includegraphics[width=12cm,keepaspectratio]{images/ga_cxpb_mutpb.png}
 	\caption{Effects of crossover and mutation rates on the benchmark algorithm's execution time.}
 	\label{fig:ga_cxpb_mutpb}
 \end{figure}
 
+ This found an apparent optimal parameter set of CXPB=0.8 and MUTPB=0.8. Due to the random nature of genetic algorithms, this does not guarantee a good solution would be found at every run, but allows us some assurance that the average run from the benchmark using these parameters will be the most precise for this algorithm. Due to the variation in scans and maps, it is important to note that these parameters may not be optimal for other scans or maps, but are likely to require tuning through repeated experiments. 
 
- This found an apparent optimal parameter of CXPB=0.3 and MUTPB=0.2. It is highly possible that these 
- % [TODO DISCUSS].
+ % [TODO DISCUSS with additional data!!].
 
 \chapter{Algorithm design}
 \section{Objectives}
 \label{sec:objectives}
-The algorithm we aim to implement should improve on existing solutions in 3 ways:
+The algorithm we aim to implement should improve on existing solutions in the following ways:
 \begin{itemize}
 	\item Improve the accuracy and precision of the estimated pose
 	\item Reduce the computational time required to produce this pose
 \end{itemize}
 In order to evaluate the relative improvements of our algorithm, we will first re-implement the best existing GA (non-lookup) [AND THEN GLASM?] as follows.
 
-The algorithm aims to achieve the goals defined \autoref{sec:objectives} through a series of independent improvements described in the following sections. These are the use of elitism selection strategies (\autoref{subsec:elitism_sel}), pre-emptively organising the population of individuals (\autoref{subsec:grid_based_feature}) and finally the use of a convergent mutation operator (\autoref{subsec:zeno_mutation}).
+The algorithm aims to achieve the goals defined \autoref{sec:objectives} through a series of independent improvements described in the following sections. These are the use of elitism selection strategies (\autoref{subsec:elitism_sel}) and pre-emptively organising the population of individuals (\autoref{subsec:grid_based_feature}).
 
 
 \section{Elitism selection}
@@ -375,41 +378,81 @@ The computational complexity of a fitness-ranked sorting method (quicksort in $O
 
 \subsection{Crossover and Mutation rates}
 \label{subsec:elite_cxpb_mupb}
-As with the benchmark algorithms, near-optimal crossover and mutation rates were found by evaluating combinations of these in range (0, 1). Valid combinations are restricted according to $mutpb + cxpb <= 1$, which produces the correct number of offspring at each generation. These combinations were evaluated 30 times each over 50 generations, with a population of 50 individuals and an elitism of 0.8 (that is, the top 80\% of the population are carried over into the next generation and used to produce the next generation's remaining population as offspring). 
+As with the benchmark algorithms, near-optimal crossover and mutation rates were found by evaluating combinations of these in range (0, 1). Valid combinations are restricted according to $mutpb + cxpb <= 1$, which produces the correct number of offspring at each generation. These combinations were evaluated 30 times each over 50 generations, with a population of 50 individuals and an elitism of 0.8 (that is, the top 80\% of the population are carried over into the next generation and used to produce the next generation's remaining population as offspring). The experiment was initally conducted using scan110, which we deem to be sufficient as the crossover and mutation rates of the individuals are used in our algorithm to provide pose refinement rather than increase the breadth of search; as maps can be expected to have a smooth peak (as seen in the fitness landscapes in \autoref{sec:fitness_landscape}), the mutation and crossover rates are expected to be near-optimal for most scans in the map. To increase our confidence in this assumption, an equivalent search was conducted on a randomly selected scan (scan64) as seen below.
 
-\begin{figure}[ht]
-\centering
-	\includegraphics[width=9cm,keepaspectratio]{images/ga_elite_cxpb_mutpb.png}
-	\caption{Effects of crossover and mutation rates on the benchmark algorithm's average combined error.}
+% FROM elitism/CXPB_ga_elite.xslx
+\begin{figure}
+\begin{subfigure}[b]{0.5\textwidth}
+	\resizebox{\linewidth}{!}{
+		\includegraphics[width=9cm,keepaspectratio]{images/ga_elite_cxpb_mutpb110.png}
+	}
+\end{subfigure}
+\begin{subfigure}[b]{0.5\textwidth}
+	\resizebox{\linewidth}{!}{
+		\includegraphics[width=9cm,keepaspectratio]{images/ga_elite_cxpb_mutpb64.png}
+	}
+\end{subfigure}
+	\caption{Effects of crossover and mutation rates on the benchmark algorithm's average combined error, using scan110 (left) and scan64 (right).}
 	\label{fig:ga_elite_cxpb_mutpb_exec_time}
 \end{figure}
 
 This resulted in \autoref{fig:ga_elite_cxpb_mutpb_exec_time}, which demonstrates that an average minimal combined error will occur when utilising a 100 \% mutation rate and no crossover; we will therefore use as the basis for which to select further parameters. This result can be explained by the fact that it maximises the movement of an individual throughout the evolution. Individuals which randomly move towards maximas are maintained in the population (as they will have a higher fitness), whilst individuals which distance themselves from the maxima sufficiently (and therefore a lower fitness) will eventually be removed from the population by the elitism.
 
-
-
-% [TODO discuss evaluation on additional maps]
-
-
-
 \subsection{Elitism rate}
 \label{subsec:elite_elitism_rate}
 Corresponding elitism rates were selected using another exhaustive search from $0 <= n <= 1$, where n represents the top percentage of candidate poses which are kept for the next generation. This feature would affect the trade-off between the breadth of search (as does the population size), and the speed of convergence of the algorithm (as worse solutions are more rapidly removed from the population). We expect the optimal elitism rate to be strongly affected by the smoothness of the fitness landscape: maps with multiple peaks in fitness (i.e: a scan strongly matches multiple features in the map) may require a slower convergence to ensure they find the global maxima, whilst a faster convergence rate (by selecting fewer individuals at each generation) could allow poses in smoother maps to be quickly found. In order to find a near-optimal elitism rate, 30 evaluations of the algorithm with varying elitism rates were ran using Scan110 and our reference map, in addition to the previously established mutation and crossover rates.
-% [INSERT GRAPH HERE ]
-As we can see in the figure above, there appears to be an optima at 0.95 (95\% of the population is maintained and mutated into the next generation whilst 5\% are produced), which indicates the need for a slower convergence than we expected. 
+
+% from elite_sweep_110(latest)
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+	    \begin{axis}[
+	        xtick = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0},
+	        width  = \textwidth,
+	        height = 8cm,
+	        ylabel = {Combined error},
+	        xmin = 0,
+	        ymin=0,
+	        xmax=1.05,
+	        ymax=14,
+	        grid=both,
+	        xlabel = {Proportion of top individuals selected.},
+	        legend pos=north east,
+	        legend columns = 4,
+	    ]
+	    \addplot+ table [col sep=comma, x=elitism, y=scan2] {data/elite/elitism.csv};
+	    \addlegendentry{Scan2}
+
+	    \addplot+ table [col sep=comma, x=elitism, y=average] {data/elite/elitism.csv};
+	    \addlegendentry{Average}
+
+	    \addplot+ table [col sep=comma, x=elitism, y=scan64] {data/elite/elitism.csv};
+	    \addlegendentry{Scan64}
+
+	    \addplot+ table [col sep=comma, x=elitism, y=scan110] {data/elite/elitism.csv};
+	    \addlegendentry{Scan110}
+	    \end{axis}
+	\end{tikzpicture}
+	\caption{Effecs of elitism rate on combined error.}
+	\label{fig:elitsm_rates}
+\end{figure}
+As we can see in the figure above, there appears to be an optima at 0.95 (95\% of the population is maintained and mutated into the next generation whilst 5\% are produced), which indicates the need for a slower convergence than we expected. This is the case for both scan110 and the average of scans 2, 64 and 110, and will therefore be used when evaluating our algorithm in our benchmark.
+
+% TODO discuss further
 
 \subsection{Evaluation against Benchmark}
 \subsubsection{Balanced population size and number of generations}
 \label{subsec:ga_vs_elite_eq_pop_gen}
-The algorithm was first compared to a benchmark using an equal population size and number of generations. This was evaluated 30 times using optimal parameters for each algorithm, using scan110 as a representative of scans in the dataset. This found that our elitist algorithm was capable of finding more precise poses with limited algorithmic capacity, with a mean combined error of 0.896 against 2.576. The result was validated using a two-tailed T-Test (with unequal variance) between the set of combined errors (N=30, p<0.05). However, the elitist algorithm also required significantly more time to run, which brings into question the efficacity of the algorithm when implemented on target.
+The algorithm was first compared to a benchmark using an equal population size and number of generations. This was evaluated 30 times using optimal parameters for each algorithm, using scan110 as a representative of scans in the dataset. This found that our elitist algorithm was capable of finding more precise poses with limited algorithmic capacity, with a mean combined error of 0.896 against 5.02. The result was validated using a two-tailed T-Test (with unequal variance) between the set of combined errors (N=30, p<0.05). However, the elitist algorithm also required slightly more time to run, which brings into question the efficacity of the algorithm when implemented on target.
 
-\begin{table}[]
+% From elite/Elite_vs_GA.xslx
+\begin{table}
 \centering
 \begin{tabular}{|l|l|l|l|l|}
 \hline & \multicolumn{2}{l|}{\textbf{Combined error}} & \multicolumn{2}{l|}{\textbf{Execution time (s)}} \\ \hline & 
-\textbf{Benchmark}     & \textbf{Elitism}    & \textbf{Benchmark}       & \textbf{Elitism}      \\ \hline 
-\textbf{Mean} & 2.576               & 0.896          & 35.444                 & 62.044              \\ \hline
-\textbf{Stdev}  & 3.314               & 2.838            & 6.597                 & 0.495              \\ \hline
+\textbf{Benchmark} & \textbf{Elitism}& \textbf{Benchmark}   & \textbf{Elitism}  \\ \hline 
+\textbf{Mean} & 5.020   & 0.896  & 63.085 & 62.044  \\ \hline
+\textbf{Stdev}  & 6.053   & 2.838& 0.852 & 0.495  \\ \hline
 \end{tabular}
 \caption{Combined error and execution time over 30 runs of benchmark and elitist algorithms}
 \label{tab:ga_vs_elite_eq_pop_gen}
@@ -417,14 +460,251 @@ The algorithm was first compared to a benchmark using an equal population size a
 
 \subsubsection{Equal execution time}
 \label{subsec:ga_vs_elite_time_sweep}
-Further to the previous experiment, 
+Further to the previous experiment, the code was modified to loosely constrain the available execution time; this functioned by halting the algorithm if, at the end of a generation, the elapsed time was larger than a specified threshold. As the subsequent results functioned in unequal execution times, the results were weighed according to their execution time, such that the statistics were ran on values representing the product of the execution time and combined error. A lower value is therefore preferable as it indicates the algorithm was either more precise than the other given a certain computational time, required less computational time to produce an equally precise result, or a combination of the two. 
+
+This produced the data visible in \autoref{fig:ga_vs_elite_box_whiskers}; as we can see, the elite algorithm produces more efficient results across the set of target execution times. This is most visible by the comparatively low median (1.715 against 49.941), along with a more efficient upper quartiler (60.35 against 216.524). This demonstrates that the elite algorithm produces consistently more efficient solutions than the benchmark algorithm. It does however either take an excessively long period of time or produces poor results, as demonstrated by the large whiskers (this is addressed in \autoref{subsec:grid_based_feature}).
+
+
+% From elitism/elite-vs_ga
+\begin{figure}
+	\begin{tikzpicture}
+		\begin{axis}
+		[height=4cm, width=0.8\textwidth, ytick={1,2}, yticklabels={Elite, Benchmark}, xlabel={Combined error $\times$ execution time}]
+
+		\addplot+[
+			boxplot prepared={
+				median =1.715260273,
+				upper quartile = 60.35376507,
+				lower quartile = 0.296903234,
+				upper whisker = 1130.260711,
+				lower whisker = 0.000817614
+			},
+		] coordinates {};	
+
+		\addplot+[
+			boxplot prepared={
+				median = 49.941, 
+				upper quartile = 216.524,
+				lower quartile =  6.084,
+				upper whisker =  1514.689,
+				lower whisker = 0.000108
+			},
+		] coordinates {};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Performance of each algorithm with 50 population, as many generations as possible within the time frame and optimal parameters for each algorithm.}
+	\label{fig:ga_vs_elite_box_whiskers}
+\end{figure}
+
+These results can be further analysed in \autoref{fig:ga_vs_elite_bucket}, where the results are grouped into buckets of execution time. A bucket-paired T-Test demonstrates the results from the elite algorithm are statistically more efficient (i.e: execution time $\times$ combined error is lower) per execution time (means of 78.855 vs 167.158, p<0.001, N=30). This is not the case for all time limits; benchmark runs limited to 5-10s are more efficient (28.714 average combined error $\times$ execution time) than the elite algorithm (58.509). This may be due to the benchmark's use of crossovers to rapidly explore areas of the map which are not yet populated; an equivalent breadth of search is not available in our algorithm due to the small mutation sizes and lack of crossover, which we will address in our next feature in \autoref{subsec:grid_based_feature}. 
+
+We can also notice that the precision per time unit seems to increase as we provide the elite algorithm with additional time, leading to an exponential decrease in error. In contrast, the benchmark algorithm appears to follow a constant efficiency. 
+
+\pgfplotstableread[col sep=comma]{data/ga_vs_elite/time_limited_buckets.csv}\datatable
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+	    \begin{axis}[
+	        ybar,
+	        axis y line*=left,
+	        xtick=data,
+	        xticklabels from table={\datatable}{bucket},
+	        xticklabel style={rotate=45},
+	        bar width=0.5,
+	        bar shift=0pt,
+	        grid=both,
+	        width  = \textwidth,
+	        height = 10cm,
+	        ylabel = {Execution time $\times$ combined error},
+	        xlabel = {Real execution time (s)},
+	        % scaled y ticks = false,
+	        legend pos = north west,
+	        ymax=450,
+	        ymin=0,
+	    ]
+	    \addplot+[fill opacity=0.75] table [col sep=comma, x expr=\coordindex, y=elite_errortime, fill opacity=0.5] {data/ga_vs_elite/time_limited_buckets.csv};
+
+	    \addplot+[fill opacity=0.5] table [col sep=comma, x expr=\coordindex, y=benchmark_errortime, fill opacity=0.5] {data/ga_vs_elite/time_limited_buckets.csv};
+	    \addlegendentry{Elite time $\times$ error}
+	    \addlegendentry{Benchmark time $\times$ error}
+	    \end{axis}
+
+	    \begin{axis}[
+	    	axis y line*=right,
+	        xtick=data,
+	        xticklabels from table={\datatable}{bucket},
+	        xticklabel style={rotate=45, opacity=0.0},
+	        bar width=0.5,
+	        bar shift=0pt,
+	        width  = \textwidth,
+	        height = 10cm,
+	        ylabel = {Combined error},
+	        ymax=12,
+	        ymin=0,
+	    ]
+	    \addplot+table [col sep=comma, x expr=\coordindex, y=elite_error] {data/ga_vs_elite/time_limited_buckets.csv};
+	    \addplot+table [col sep=comma, x expr=\coordindex, y=benchmark_error] {data/ga_vs_elite/time_limited_buckets.csv};
+	    \addlegendentry{Elite error}
+	    \addlegendentry{Benchmark error}
+
+	    \end{axis}
+	\end{tikzpicture}
+	\caption{Average run time $\times$ combined error for each algorithm, using as many generations as possible in time limit, optimal parameters for each algorithm and population of 50.}
+	\label{fig:ga_vs_elite_bucket}
+\end{figure}
+
+As demonstrated in \autoref{subsec:ga_vs_elite_time_sweep}, fitness-rank based selection is capable of rapidly selecting promising individuals, duplicating them and mutating their offspring to find an optima near them. This results in an algorithm which is more efficient in a majority of time scales, but can still fail to produce a precise pose given an arbitrary amount of computational time (as demonstrated by the larger upper whisker in \autoref{fig:ga_vs_elite_box_whiskers}). This may be due to the stochastic nature of the genetic algorithms, or more particularly the population initialisation. 
+
+Whilst the benchmark algorithm has an equally large worst case, we can hypothesise that this is due to the inability of the algorithm to evolve it's poses with sufficient precision. In contrast, the elite algorithm's duplication and mutation of individuals increases the number of local explorations around existing individuals, but is incapable of evaluating areas which were not populated by the initial population. This has led to the development of a grid-based initial population, as detailed in \autoref{subsec:grid_based_feature}.
 
 \subsection{Grid-based initial population}
 \label{subsec:grid_based_feature}
+ As previously stated, rank-based selection of individuals causes the algorithm to be unable to explore areas which were not sampled in the initial population. It would be possible to increase the probability of sampling every area in the map by increasing the population size, but this would lead to a larger execution time as a certain number of generations may still be required to sufficiently refine the position of an individual via duplication and mutation, even if the required displacement is reduced by the increased population density.
 
-\subsection{Converging mutation rates}
-\label{subsec:zeno_mutation}
+ In order to provide an adequate breadth of search without a large computational overhead, we utilised a simple algorithm to place a set number of individuals in a map at a constant density; this is visible by the red dots in \autoref{fig:grid_init} which represent individuals in the map. This enabled the algorithm to initially evaluate a larger number of 'candidate' individuals, of which 50 are selected and mutated to begin the previous evolution; this action forms the first generation of our algorithm. Subsequent generations are the same as in the non-grid algorithm. 
 
+\begin{figure}[ht]
+\centering
+	\includegraphics[width=8cm,keepaspectratio]{images/grid.png}
+	\caption{An arrangement of an initial population.}
+	\label{fig:grid_init}
+\end{figure}
+
+The effects of pre-arranging a larger population were evaluated using the same methodology with which our algorithm was previously compared to the benchmark. The elitist algorithm including a grid-based initialisation of 200 individuals (followed by the evolution of the 50 best individuals) was executed 30 times across a range of time limits, producing the data found in \autoref{fig:grid_vs_elit}. 
+
+\pgfplotstableread[col sep=comma]{data/rand_vs_grid/timesweep.csv}\datatablegrid
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+	    \begin{axis}[
+	        ybar,
+	        axis y line*=left,
+	        xtick=data,
+	        xticklabels from table={\datatablegrid}{bucket},
+	        xticklabel style={rotate=45},
+	        bar width=0.5,
+	        grid=both,
+	        bar shift=0pt,
+	        width  = \textwidth,
+	        height = 7cm,
+	        ylabel = {Execution time $\times$ combined error},
+	        xlabel = {Real execution time (s)},
+	        ymin=0,
+	        ymax=170,
+	        % scaled y ticks = false,
+	        legend pos = north west
+	    ]
+	    \addplot+[fill opacity=0.75] table [col sep=comma, x expr=\coordindex, y=grid_errortime, fill opacity=0.5] {\datatablegrid};
+	    \addplot+[fill opacity=0.75] table [col sep=comma, x expr=\coordindex, y=rand_errortime, fill opacity=0.5] {\datatablegrid};
+
+	    \addlegendentry{Grid time $\times$ error}
+	    \addlegendentry{Elite time $\times$ error}
+	    \end{axis}
+
+	    \begin{axis}[
+	    	axis y line*=right,
+	        xtick=data,
+	        xticklabels from table={\datatablegrid}{bucket},
+	        xticklabel style={rotate=45, opacity=0.0},
+	        bar width=0.5,
+	        bar shift=0pt,
+	        width  = \textwidth,
+	        height = 7cm,
+	        ylabel = {Combined error},
+	        ymax=4.2,
+	        ymin=0,
+	    ]
+	    \addplot+table [col sep=comma, x expr=\coordindex, y=grid_error] {\datatablegrid};
+	    \addplot+table [col sep=comma, x expr=\coordindex, y=rand_error] {\datatablegrid};
+	    \addlegendentry{Grid error}
+	    \addlegendentry{Elite error}
+
+	    \end{axis}
+	\end{tikzpicture}
+	\caption{Performance of grid-based initialisation vs elitist algorithm.}
+	\label{fig:grid_vs_elit}
+\end{figure}
+
+Using the same TTest (paired across bucketed average execution time $\times$ combined error) we found the mean efficiency to be statistically lower for grid-initialised algorithms (with a larger initial population which is later reduced) as opposed to standard initialisations (average execution time $\times$ error of 16.813 vs 76.855, p<0.001, N=360). This is likely due to a reduction in the number of algorithm failures, where no adequate pose was found within the time limit. This can be seen in \autoref{fig:grid_vs_rand_stdev}, where the standard deviations for each execution time group are generally lower for grid-based initialisation than the standard algorithm. This is found to be statistically significant for two thirds of the groups using an F-Test (p<0.05), therefore demonstrating that grid-based initialisations greatly increase the precision of the algorithm. We should note that optimal grid density or parameters were not explored for the map or scan, and it could therefore be possible to further accentuate the effect of this method on the output pose.
+
+\pgfplotstableread[col sep=comma]{data/rand_vs_grid/stdev.csv}\datatablegridstdev
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+	    \begin{axis}[
+	        xtick=data,
+	        xticklabels from table={\datatablegridstdev}{buckets},
+	        xticklabel style={rotate=45},
+	        width  = 0.8\textwidth,
+	        height = 5cm,
+	        ylabel = {Combined error stdev},
+	        xlabel = {Real execution time (s)},
+	        ymin=0,
+	        grid=both,
+	    ]
+	    \addplot+table [col sep=comma, x expr=\coordindex, y=grid_stdev] {\datatablegridstdev};
+	    \addplot+table [col sep=comma, x expr=\coordindex, y=rand_stdev] {\datatablegridstdev};
+	    \addlegendentry{Grid initialisation}
+	    \addlegendentry{Standard initialisation}
+	    \end{axis}
+	\end{tikzpicture}
+	\caption{Improved pose accuracy and algorithm success from grid-based initialisations.}
+	\label{fig:grid_vs_rand_stdev}
+\end{figure}
+
+We should additionally note that while the feature was envisioned using a grid-like pattern, the use of a larger initial population which is randomly distributed around the map does achieve similarly distinct results when compared to the elitist algorithm. This was validated over 30 runs of the algorithm, which produced a mean result (in execution time $\times$ combined error) of 19.402 across all execution time buckets, compared to the elitist algorithm's mean of 70.832. A paired T-test across execution time buckets does confirm it is not significantly worse than a grid-based initialisation (mean of 16.813, T-test p=0.36), nor does it produce significantly different variances in the buckets (F-Test p>0.05 for buckets smaller or equal to (35-40)). 
+
+As such, 'primed' populations of individuals are hugely beneficial to the evolution of a pose through elitism selection, as they increase the probability that an individual will be placed in a position from which it would crawl (via mutation and duplication) towards the global maxima. This addition further contributes to improving the consistency of pose retrieval, as well as reducing the worst case pose, as demonstrated by the compact boxplot representing the Grid algorithm's results in \autoref{fig:ga_vs_elite_vs_grid_box_whiskers}.
+
+\begin{figure}
+	\begin{tikzpicture}
+		\begin{axis}
+		[height=4cm, width=0.8\textwidth, ytick={1,2, 3}, yticklabels={Grid, Elite, Benchmark}, xlabel={Combined error $\times$ execution time}]
+
+		\addplot+[
+			boxplot prepared={
+				median =0.732880246,
+				upper quartile = 2.244455441,
+				lower quartile = 0.195485406,
+				upper whisker = 672.076147,
+				lower whisker = 0.00238918,	
+			},
+		] coordinates {};	
+
+		\addplot+[
+			boxplot prepared={
+				median =1.715260273, 
+				upper quartile = 60.35376507,
+				lower quartile = 0.296903234,
+				upper whisker = 1130.260711,
+				lower whisker = 0.000817614
+			},
+		] coordinates {};
+
+
+		\addplot+[
+			boxplot prepared={
+				median = 49.94087437,
+				upper quartile = 216.5239058,
+				lower quartile = 6.084449498,
+				upper whisker = 1514.687754,
+				lower whisker =0.000108415,
+			},
+		] coordinates {};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Performance of each algorithm over 30 executions for various time limits.}
+	\label{fig:ga_vs_elite_vs_grid_box_whiskers}
+\end{figure}
+
+\chapter{Discussion}
+\section{Comparison to classical algorithms}
+
+
+\section{Further work}
 \bibliographystyle{unsrt}
 \bibliography{references}
 
