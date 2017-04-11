@@ -780,29 +780,29 @@ We will explore the reasons behind this gap in \autoref{sec:algorithm_limitation
 A number of issues could cause the under-performance of the genetic algorithms; these are the fitness function, ...
 
 
-The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_peaks} illustrate a high-granularity visualisation of the fitness functions observed in \autoref{fig:landscape} for scan110, demonstrating that the peak of the fitness function does not match the expected pose (-2.184327,2.641909)
+The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_peaks} illustrate a high-granularity visualisation of the fitness functions observed in \autoref{fig:landscape} for scan110, demonstrating that the peak of the fitness function does not match the expected pose provided by the Player-Stage model used in \citet{Lenac2011-co}(-2.184327, 2.641909). Instead, a peak further to the north west is indicated by the concentric circles forming a summit. Therefore, we can assume a translation error is due to individuals being caused by the fitness function. This occurs across all 3 sampled tolerance sizes, suggesting it may be specific to this map, scan and pose.
 
 \begin{figure}
 \begin{subfigure}[b]{0.3\textwidth}
 	\resizebox{\linewidth}{!}{
-		\includegraphics[width=9cm,keepaspectratio]{images/landscape_precise_0.1.png}
+		\includegraphics[width=9cm,keepaspectratio]{images/landscape_0_1.png}
 	}
 \end{subfigure}
 \begin{subfigure}[b]{0.3\textwidth}
 	\resizebox{\linewidth}{!}{
-		\includegraphics[width=9cm,keepaspectratio]{images/landscape_precise_0.2.png}
+		\includegraphics[width=9cm,keepaspectratio]{images/landscape_0_2.png}
 	}
 \end{subfigure}
 \begin{subfigure}[b]{0.3\textwidth}
 	\resizebox{\linewidth}{!}{
-		\includegraphics[width=9cm,keepaspectratio]{images/landscape_precise_0.5.png}
+		\includegraphics[width=9cm,keepaspectratio]{images/landscape_0_5.png}
 	}
 \end{subfigure}
 	\caption[Fitness landscape peaks.]{High-precision sweep over peaks of scan110's fitness landscape, using different tolerances of subsampling (left: 0.1, centre: 0.2, right: 0.5)}
 	\label{fig:landscape_peaks}
 \end{figure}
 
-The complexity of the fitness function relative to the point density presents some difficulty in creating a feasible implementation; as $O(n^2)$ is not a significant issue when performing an operation few times per run, it becomes a major performance issue when the operation is repated for every individual, at every generation. This issue led to the use of sub-sampled maps, which marginally reduce
+We hypothesise that this effect may be due to 
 
 
 % Fitness function does not match peak
