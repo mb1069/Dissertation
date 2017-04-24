@@ -52,15 +52,18 @@
 % \renewcommand*{\lstlistlistingname}{List of Listings}
 \lstlistoflistings
 \begin{itemize}
+	\item LiDar: Light Direction and Ranging (sensor)
 	\item ICP: Iterative Closest Point algorithm
 	\item NDT: Normal distribution transform
 	\item EA: Evolutionary Algorithm
+	\item GA: Genetic Algorithm
 	\item PSM: Polar Scan matching
 	\item HSM: histogram scan matching
 	\item PCA: Principal Component Analysis
 	\item GLASM: Genetic Lookup based Algorithm for Scan Matching
 	\item h-GLASM: Hybrid Genetic Lookup Based Algorithm for Scan Matching
 	\item DGA: Dynamic Genetic Algorithm
+
 	% TODO expand list of listings
 \end{itemize}
 
@@ -342,21 +345,50 @@ An existing GA by \citet{Robertson2002-ou} was adapted as a benchmark algorithm 
 \label{sec:fitness_landscape}
 The fitness function utilised by \citet{Robertson2002-ou} is a minimisation of the sum of the minimal distance of every point in the scan to its closest point in the reference map: $E = \sum_i |S_i-M_I|$ where S is a $(x,y)$ point in the scan and M is S's closest point in the map. This was altered for our benchmark algorithm; a function maximisation problem was defined instead, using $M = \frac{1}{1+E}$ as our new fitness function. This provides a more accentuated curve of fitness in the hope of improving the convergence capabilities of both the benchmark and new algorithm, in addition to adhering to the standard for GA's established by \citet{Eiben2015-de}.
 
-To ensure the fitness function's global maxima matches our scan location, the function was evaluated across a set of poses which blanket the map. The maximal fitness value at a given X/Y coordinate (across all tested rotations) was graphed in the charts below, demonstrating that the algorithm's peaks roughly matches the target pose for that scan (given the resolution of the set of poses); this demonstrates that the algorithm's fitness will be proportional to the pose's precision, and therefore should allow the GA to evolve towards the correct pose. This is visualised in \autoref{fig:landscape}, where scan110 was evaluated at various poses and angles, and the maximal fitness for any rotation at a position (x,y) was plotted.
+To ensure the fitness function's global maxima matches our scan location, the function was evaluated across a set of poses which blanket the map. The maximal fitness value at a given X/Y coordinate (across all tested rotations) was graphed in the charts below, demonstrating that the algorithm's peaks roughly matches the target pose for that scan (given the resolution of the set of poses); this demonstrates that the algorithm's fitness will be proportional to the pose's precision, and therefore should allow the GA to evolve towards the correct pose. This is visualised in \autoref{fig:landscape_overlay}, where scan110 was evaluated at various poses and angles, and the maximal fitness for any rotation at a position (x,y) was plotted. The presence of a single clear global optima across various scans in the dataset is demonstrated in \autoref{fig:landscapes}, where the same method was applied to a variety of other scans; these further demonstrate the matching of the scan's pose with the global maxima of the fitness landscape. 
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=9cm,keepaspectratio]{images/landscape_overlay.png}
-	\caption{Fitness maxima corresponding to the position from where the scan was taken. The blue peaks mark areas with low error, where points in scan 110 and the map's points (in red) are closely coupled. (see \autoref{fig:scan110} for scan and pose positions)}
-	\label{fig:landscape}
+	\includegraphics[width=7cm,keepaspectratio]{images/landscape_overlay.png}
+	\caption{Overlay of the fitness landscape over the reference data map. The green-orange peak (at approx (-2,2.5)) mark areas with low error, where points in scan 110 and the map's points (in red) are closely coupled. (see \autoref{fig:scan110} for scan and pose positions)}
+	\label{fig:landscape_overlay}
 \end{figure}
+
+\begin{figure*}[ht]
+        \centering
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/landscape18.png}
+            {{\small Scan 18}}    
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.475\textwidth}  
+            \centering 
+            \includegraphics[width=\textwidth]{images/landscape110.png}
+            {{\small Scan 110}}    
+        \end{subfigure}
+        \vskip\baselineskip
+        \begin{subfigure}[b]{0.475\textwidth}   
+            \centering 
+            \includegraphics[width=\textwidth]{images/landscape115.png}
+            {{\small Scan 115}}    
+        \end{subfigure}
+        \quad
+        \begin{subfigure}[b]{0.475\textwidth}   
+            \centering 
+            \includegraphics[width=\textwidth]{images/landscape240.png}
+            {{\small Scan 240}}    
+        \end{subfigure}
+        \caption{Fitness landscapes for randomly selected scans in dataset.}
+        \label{fig:landscapes}
+\end{figure*}
 
 \section{Parameter optimisation}
 \subsection{Population \& Generations}
 As expected, allowing the algorithm to evolve a larger population with/or for a larger number of generations provides improvements to the fitness of the solution provided. However, these require an impractically large amount of computational power: as we can see in \autoref{fig:ga_pop_gen}, a simple evolution of 50 generations with a population of 50 requires an average 37 seconds, on a 16 core machine. As the computational power requirements increase linearly with the number of generations and population size, these would become prohibitively expensive to run in a real time environment. As such, evaluating algorithms using a small population and number of generations will also present a difficult challenge for algorithms, allowing the difference in convergence speeds to be accentuated, whilst also enabling us to run our experiments in a timely manner to compare algorithms. 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=\textwidth,keepaspectratio]{images/ga_pop_gen_sweep.png}
+	\includegraphics[width=0.4\textwidth,keepaspectratio]{images/ga_pop_gen_sweep.png}
 	\caption{Execution time of the benchmark GA using scan110 and various number of generations and population sizes. (see \autoref{fig:scan110} for scan and pose positions)}
 	\label{fig:ga_pop_gen}
 \end{figure}
@@ -367,7 +399,7 @@ The mutation and crossover probabilities for our benchmark were found using 60 p
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=8cm,keepaspectratio]{images/ga_cxpb_mutpb.png}
+	\includegraphics[width=\textwidth,keepaspectratio]{images/ga_cxpb_mutpb.png}
 	\caption[Optimising cross and mutation rate for benchmark algorithm.]{Effects of crossover and mutation rates on the benchmark algorithm's execution time.}
 	\label{fig:ga_cxpb_mutpb}
 \end{figure}
@@ -390,12 +422,13 @@ The size of the mutation was defined as a random sample from a normal distributi
 	        xtick=data,
 	        % xticklabels from table={\datatableelitemutsize}{mutsize},
 	        xticklabel style={rotate=45},
-	        width  = 0.8\textwidth,
+	        width  = 0.6\textwidth,
 	        height = 3cm,
 	        ylabel = {Combined error},
 	        xlabel = {Squared variance of standard distribution from which step sizes are drawn.},
 	        ymin=0,
 	        xmin=0.2,
+	        xmax=2.2,
 	        ymajorgrids=true,
 	        % xmax=1.4,
 	        % grid=both,
@@ -423,7 +456,7 @@ The algorithm aims to achieve the goals defined here through a series of indepen
 
 \section{Elitism selection}
 \label{subsec:elitism_sel}
-As seen in the 3D charts of the fitness landscapes seen in \autoref{fig:landscape}, the fitness of our solutions evolve in a smooth landscape, generally with a significantly larger global maxima. We hypothesised that this would allow us to utilise highly convergent forms of GAs; this was on the assumption that our population was large enough to place one or more individuals in an area such that the individual's local maxima was the global maxima. This individual would then be more likely to have a higher fitness than the rest of the population (due to the smooth fitness landscape), and therefore a high rate of duplication and mutation would enable an evolution towards the global maxima. The concept is built on \citet{David_E_Goldberg1991-es}'s solution to balancing the conflict between exploration and exploitation through higher growth ratios followed by building block discovery through mutation; we however diverge from this by instead utilising mutation to optimise our current local maxima (i.e: block) and assume our initial population was sufficiently dense and spread across the map to find all local maximas.
+As seen in the 3D charts of the fitness landscapes seen in \autoref{fig:landscape_overlay}, the fitness of our solutions evolve in a smooth landscape, generally with a significantly larger global maxima. We hypothesised that this would allow us to utilise highly convergent forms of GAs; this was on the assumption that our population was large enough to place one or more individuals in an area such that the individual's local maxima was the global maxima. This individual would then be more likely to have a higher fitness than the rest of the population (due to the smooth fitness landscape), and therefore a high rate of duplication and mutation would enable an evolution towards the global maxima. The concept is built on \citet{David_E_Goldberg1991-es}'s solution to balancing the conflict between exploration and exploitation through higher growth ratios followed by building block discovery through mutation; we however diverge from this by instead utilising mutation to optimise our current local maxima (i.e: block) and assume our initial population was sufficiently dense and spread across the map to find all local maximas.
 	
 This represented a form of elitism, where the top n percentile of the population was retained at each generation and duplicated into offspring, which increase the genetic diversity via crossover or mutation according to a set probability. \citet{T_Back_D_B_Fogel_T_Michalewicz} and \citet{Shapiro1992-qm} describe an accurately similar algorithm known as the $(\mu + \lambda)$  algorithm.
 
@@ -559,7 +592,7 @@ This produced the data visible in \autoref{fig:ga_vs_elite_box_whiskers}; as we 
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}
-		[height=4cm, width=0.8\textwidth, ytick={1,2}, yticklabels={Elite, Benchmark}, xlabel={Combined error $\times$ execution time}]
+		[height=4cm, width=0.8\textwidth, ytick={1,2}, yticklabels={Elite, Benchmark}, xlabel={Combined error $\times$ execution time}, xmode=log]
 
 		\addplot+[
 			boxplot prepared={
@@ -604,12 +637,12 @@ We can also notice that the precision per time unit seems to increase as we prov
 	        % bar shift=0pt,
 	        grid=both,
 	        width  = \textwidth,
-	        height = 5cm,
+	        height = 8cm,
 	        ylabel = {Execution time $\times$ combined error},
 	        xlabel = {Real execution time (s)},
 	        % scaled y ticks = false,
 	        legend pos = north west,
-	        ymax=450,
+	        ymax=300,
 	        ymin=0,
 	    ]
 	    \addplot+[fill opacity=0.75] table [col sep=comma, x expr=\coordindex, y=elite_errortime, fill opacity=0.5] {data/ga_vs_elite/time_limited_buckets.csv};
@@ -625,9 +658,9 @@ We can also notice that the precision per time unit seems to increase as we prov
 	        xticklabels from table={\datatable}{bucket},
 	        xticklabel style={rotate=45, opacity=0.0},
 	        width  = \textwidth,
-	        height = 5cm,
+	        height = 8cm,
 	        ylabel = {Combined error},
-	        ymax=12,
+	        ymax=7.5,
 	        ymin=0,
 	    ]
 	    \addplot+table [col sep=comma, x expr=\coordindex, y=elite_error] {data/ga_vs_elite/time_limited_buckets.csv};
@@ -653,7 +686,7 @@ Whilst the benchmark algorithm has an equally large worst case, we can hypothesi
 
 \begin{figure}
 \centering
-	\includegraphics[width=4cm,keepaspectratio]{images/grid.png}
+	\includegraphics[width=8cm,keepaspectratio]{images/grid.png}
 	\caption{A grid based initial population}
 	\label{fig:grid_init}
 \end{figure}
@@ -748,35 +781,35 @@ We should additionally note that while the feature was envisioned using a grid-l
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}
-		[height=4cm, width=0.8\textwidth, ytick={1,2, 3}, yticklabels={Grid, Elite, Benchmark}, xlabel={Combined error $\times$ execution time}]
+		[height=4cm, width=0.8\textwidth, ytick={1,2, 3}, yticklabels={Grid, Elite, Benchmark}, xlabel={Combined error $\times$ execution time}, xmode=log]
 
 		\addplot+[
 			boxplot prepared={
 				median = 0.318204416,
-				upper quartile =  0.853609313,
-				lower quartile =  0.101603705,
 				upper whisker = 131.3713864,
 				lower whisker = 0.001041047,
+				upper quartile =  0.853609313,
+				lower quartile =  0.101603705,
 			},
 		] coordinates {};	
 
 		\addplot+[
 			boxplot prepared={
 				median = 1.833061726,
-				upper quartile =  63.10291318,
-				lower quartile =  0.247805344,
 				upper whisker =  1053.747935,
 				lower whisker = 0.00002342,
+				upper quartile =  63.10291318,
+				lower quartile =  0.247805344,
 			},
 		] coordinates {};
 
 		\addplot+[
 			boxplot prepared={
 				median = 12.96005,
-				upper quartile = 2191.115,
-				lower quartile = 0.000319,
-				upper whisker = 82.40675,
-				lower whisker = 2.282475,
+				upper whisker = 2191.115,
+				lower whisker = 0.000319,
+				upper quartile = 82.40675,
+				lower quartile = 2.282475,
 			},
 		] coordinates {};
 		\end{axis}
@@ -790,22 +823,8 @@ As such, 'primed' populations of individuals are hugely beneficial to the evolut
 
 
 
-% Evaluate over large dataset, measure success rate?
-
-\chapter{Experimental summary \& Conclusion}
-This report has examined the effects of elitist selection and population priming on the precision and computational time of genetic algorithms, within the context of indoor localisation using Cartesian data. Experiments detailing the variations in result accuracy, precision and computational efficiency were conducted using a feature-dense scan from \citet{Lenac2011-co}, providing a complex comparison between algorithms.
-
-\section{Elitist selection}
-As summarised in \autoref{fig:ga_vs_elite_bucket}, our first experiment showed that a large improvement in efficiency could be obtained from elitist algorithms when executing the algorithm for a larger number of generations than a low threshold; this allowed the poses to be sufficiently refined via incremental mutation. The elite algorithm was ineffective when unable to evolve for fewer generations, as the lack of a crossover mutation limited the distance covered by generation-iterative random walking. This could be amended by priming the population of individuals or utilising larger mutation sizes, as explored in the grid initialisation experiments and variable mutation rate experiment.
-
-\section{Grid-based initial populations}
-The grid-initialisation aimed to improve the global search of the elitist algorithm without significantly increasing the computational requirements of the algorithm. This was achieved by using a larger initial population of candidate poses, evenly distributed over the map. Following a single generation with this larger population, the subsequent evolution took place on the 50 best individuals from that generation (as selected by the fitness function). This resulted in an improved precision, as it increased the likelihood of an individual in the initial population being placed within close proximity of a global maxima (towards which it can mutate). In combination with a small increase in computational time, this lead to a more efficient algorithm across all execution times (as visible in \autoref{fig:grid_vs_elit}). We can safely assume that this would require slightly more memory, due to the increased codebase and larger initial population; this may impede it's implementation in resource-limited systems. 
-
-As previously cited in \autoref{subsec:ICP}, \citet{Censi2005-iv} states that it would be possible to apply a 'classical' algorithm to a global pose localisation problem by running it from a number of random poses. This would rely on the assumption that one of these random poses has a local maxima which is the global maxima; that is, it will be capable of using gradient ascent to refine it's pose, similarly to the methodology implemented by grid-based initialisation. However, ICP remains an extremely efficient algorithm, whilst the mutation-based refinement of a genetic algorithm is more similar to a random walk than a hill climbing algorithm. We have therefore opted to create a basic implementation of an ICP-based algorithm to demonstrate this.
-
-
 % TODO move to section prior to evaluation, improve description of ICP algorithm
-\subsection{ICP algorithm design \& evaluation}
+\chapter{ICP algorithm design \& evaluation}
 \label{subsec:icp_benchmark}
 An ICP algorithm \cite{Harry_undated-ea} was adapted for use with our grid-layout algorithm. It functioned by running 20 iterations of the ICP algorithm from 200 hypothetical poses laid across a grid on the map. The pose with the lowest error is then selected using the same error function used in the fitness metric for the GA's. This was executed 360 times to create a set of data comparable to the grid-based algorithm's dataset (which was created using 30 runs over 12 target durations), which was illustrated in \autoref{fig:icp_vs_grid_box_whiskers}. 
 
@@ -825,20 +844,20 @@ We will explore the reasons behind this gap in \autoref{sec:algorithm_limitation
 		\addplot+[
 			boxplot prepared={
 				median = 0.318204416,
-				upper quartile =  0.853609313,
-				lower quartile =  0.101603705,
 				upper whisker = 131.3713864,
 				lower whisker = 0.001041047,
+				upper quartile =  0.853609313,
+				lower quartile =  0.101603705,
 			},
 		] coordinates {};	
 
 		\addplot+[
 			boxplot prepared={
 				median = 1.236822,
-				upper quartile = 68.64869,
-				lower quartile = 0.001034,
-				upper whisker = 5.075329,
-				lower whisker = 0.110132,
+				upper whisker = 68.64869,
+				lower whisker = 0.001034,
+				upper quartile = 5.075329,
+				lower quartile = 0.110132,
 			},
 		] coordinates {};
 		\end{axis}
@@ -846,6 +865,23 @@ We will explore the reasons behind this gap in \autoref{sec:algorithm_limitation
 	\caption[Global-ICP performance against Grid Initialisation] {Performance of each algorithm over 30 executions for 12 time limits (note: x axis is logarithmic)}
 	\label{fig:icp_vs_grid_box_whiskers}
 \end{figure}
+
+
+% Evaluate over large dataset, measure success rate?
+
+\chapter{Experimental summary \& Conclusion}
+This report has examined the effects of elitist selection and population priming on the precision and computational time of genetic algorithms, within the context of indoor localisation using Cartesian data. Experiments detailing the variations in result accuracy, precision and computational efficiency were conducted using a feature-dense scan from \citet{Lenac2011-co}, providing a complex comparison between algorithms.
+
+\section{Elitist selection}
+As summarised in \autoref{fig:ga_vs_elite_bucket}, our first experiment showed that a large improvement in efficiency could be obtained from elitist algorithms when executing the algorithm for a larger number of generations than a low threshold; this allowed the poses to be sufficiently refined via incremental mutation. The elite algorithm was ineffective when unable to evolve for fewer generations, as the lack of a crossover mutation limited the distance covered by generation-iterative random walking. This could be amended by priming the population of individuals or utilising larger mutation sizes, as explored in the grid initialisation experiments and variable mutation rate experiment.
+
+\section{Grid-based initial populations}
+The grid-initialisation aimed to improve the global search of the elitist algorithm without significantly increasing the computational requirements of the algorithm. This was achieved by using a larger initial population of candidate poses, evenly distributed over the map. Following a single generation with this larger population, the subsequent evolution took place on the 50 best individuals from that generation (as selected by the fitness function). This resulted in an improved precision, as it increased the likelihood of an individual in the initial population being placed within close proximity of a global maxima (towards which it can mutate). In combination with a small increase in computational time, this lead to a more efficient algorithm across all execution times (as visible in \autoref{fig:grid_vs_elit}). We can safely assume that this would require slightly more memory, due to the increased codebase and larger initial population; this may impede it's implementation in resource-limited systems. 
+
+As previously cited in \autoref{subsec:ICP}, \citet{Censi2005-iv} states that it would be possible to apply a 'classical' algorithm to a global pose localisation problem by running it from a number of random poses. This would rely on the assumption that one of these random poses has a local maxima which is the global maxima; that is, it will be capable of using gradient ascent to refine it's pose, similarly to the methodology implemented by grid-based initialisation. However, ICP remains an extremely efficient algorithm, whilst the mutation-based refinement of a genetic algorithm is more similar to a random walk than a hill climbing algorithm. We have therefore opted to create a basic implementation of an ICP-based algorithm to demonstrate this.
+
+
+% TODO DISCUSS GRID-ICP
 
 
 
@@ -858,7 +894,7 @@ A number of issues could cause the under-performance of the genetic algorithms; 
 
 \subsection{Fitness function}
 \label{subsec:criticism_fitness_func}
-The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_peaks} illustrate a high-granularity visualisation of the fitness functions observed in \autoref{fig:landscape} for scan110, demonstrating that the peak of the fitness function does not match the expected pose provided by the Player-Stage model used in \citet{Lenac2011-co}(-2.184327, 2.641909). Instead, a peak further to the north west is indicated by the concentric circles forming a summit. Therefore, we can assume a translation error is due to individuals being caused by the fitness function. This occurs across all 3 sampled tolerance sizes, suggesting it may be specific to this map, scan and pose.
+The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_peaks} illustrate a high-granularity visualisation of the fitness functions observed in \autoref{fig:landscape_overlay} for scan110, demonstrating that the peak of the fitness function does not match the expected pose provided by the Player-Stage model used in \citet{Lenac2011-co}(-2.184327, 2.641909). Instead, a peak further to the north west is indicated by the concentric circles forming a summit. Therefore, we can assume a translation error is due to individuals being caused by the fitness function. This occurs across all 3 sampled tolerance sizes, suggesting it may be specific to this map, scan and pose.
 
 \begin{figure}
 \begin{subfigure}[b]{0.3\textwidth}

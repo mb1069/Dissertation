@@ -1,4 +1,4 @@
-bucket, elite_errortime, benchmark_errortime, elite_error, benchmark_error
+bucket,elite_errortime,benchmark_errortime,elite_error,benchmark_error
 5-10,23.72417736,26.23067,4.321769,3.004697
 10-15,15.02002445,48.86801,1.456604,2.902371
 15-20,23.18848517,46.92496,1.484473,2.751522
@@ -11,5 +11,3 @@ bucket, elite_errortime, benchmark_errortime, elite_error, benchmark_error
 50-55,10.85190463,157.4422,0.212551,3.233305
 55-60,100.9868608,188.4488,1.793314,3.363686
 >60,52.344204,213.4834,0.842694,3.44021
- 
-
