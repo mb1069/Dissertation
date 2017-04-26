@@ -31,7 +31,7 @@
 \date{\today}
 \supervisor{Leandro S. Indrusiak}
 \MEng
-\wordcount{10646}
+\wordcount{12789}
 % \includes{Appendices \ref{cha:usefulpackages}, \ref{cha:gotchas} and
 %   \ref{cha:deptfac}}
 
@@ -53,18 +53,19 @@
 \lstlistoflistings
 \begin{itemize}
 	\item LiDar: Light Direction and Ranging (sensor)
-	\item ICP: Iterative Closest Point algorithm
-	\item NDT: Normal distribution transform
+	\item ICP: Iterative Closest Point algorithm \cite{Besl1992-pd}
+	\item NDT: Normal Distribution Transform
+	\item PSM: Polar Scan Matching
+	\item HSM: Histogram Scan Matching
+	\item PCA: Principal Component Analysis
+	\item BnB: Branch-And-Bound algorithm \cite{Land1960-yw}
+	\item Go-ICP: globally optimal ICP \cite{Yang2013-gx}
 	\item EA: Evolutionary Algorithm
 	\item GA: Genetic Algorithm
-	\item PSM: Polar Scan matching
-	\item HSM: histogram scan matching
-	\item PCA: Principal Component Analysis
-	\item GLASM: Genetic Lookup based Algorithm for Scan Matching
-	\item h-GLASM: Hybrid Genetic Lookup Based Algorithm for Scan Matching
-	\item DGA: Dynamic Genetic Algorithm
+	\item DGA: Dynamic Genetic Algorithm \cite{Chow2004-xc}
+	\item GLASM: Genetic Lookup based Algorithm for Scan Matching \cite{Lenac2007-xm}
+	\item H-GLASM: Hybrid Genetic Lookup Based Algorithm for Scan Matching \cite{Lenac2011-co}
 
-	% TODO expand list of listings
 \end{itemize}
 
 
@@ -82,16 +83,17 @@ The academic research into this field follows three paradigms. The first two of 
 The third paradigm for an adaptable and infrastructure-free solution to indoor localisation revolve around the use of line-of-sight based solutions: these rely on various sensor technologies to map information obtained from a  $360^{\circ}$ scan to a known map of the environment. As this method relies entirely on the environment through which the robot is attempting to navigate, it should be capable of generating a more accurate and precise indoor localisation system at a reduced cost, without depending on the availability of an external system (such as functional radio-based indoor positioning systems); this could be well adapted to emergency situations, where existing electrical infrastructure is hampered yet accurate positioning is critical to the task at hand. 
 \newline
 
-Restricting the context of this dissertation to applications in autonomous robots requiring accurate positional tracking, we can state that the scope of this project is to investigate the development of infrastructure-free indoor localisation systems, and in particular the development of evolutionary algorithms for indoor positioning.
+As such, we can state that the scope of this project is to investigate the development of infrastructure-free indoor localisation systems for autonomous position tracking, and in particular the development of evolutionary algorithms for indoor positioning.
 \newline
 
 \color{red}
-Introduce GA's?
-% TODO introduce GA's?
-\color{black}
-\newline 
+This can be achieved using a variety of ways, the most generalisable of which is point-cloud matching; this takes place using a reference map composed of Cartesian data (in our case in 2-dimensions), and a scan of walls, objects or other obstructions from a point in a plane parallel to the ground. This data would be obtained using a range finder sampled at various rotations from the robot's current position, resulting in polar data which can be converted to Cartesian data. The scan data can then be mapped into the best fitting pose on the reference map using a variety of algorithms; these can be classified as `classical` algorithms (which were the initial method to solve the problem at hand), and genetic algorithms (which utilise methods resembling biological evolution to develop an optimised solution from a set of random solutions). Newer `hybrid` algorithms (which are combinations of other algorithms) have emerged for both genetic and non-genetic approaches. These are generally evaluated against well known algorithms within their approaches, but have remained somewhat independent from each other across fields, without any significant paper detailing an evaluation against another hybrid algorithm. This is most significant in the divergence of genetic algorithms with hybrid algorithms, as both build on similar classical algorithms yet offer no comparative evaluation in performance, robustness or computational time.\newline
 
-The rest of this document is organised as follows: we will first establish a conventional benchmark genetic algorithm covered in our literature review. Improvements to this algorithm will be explored sequentially and compared to this benchmark across a series of experiments, before finally summarising our findings and proposing further work on the topic.
+In the course of this project, we will aim to investigate possible optimisations and improvements to existing genetic algorithms, and to compare the suitability of classical and genetic approaches to indoor localisation. \newline
+
+The rest of this document is organised as follows: following a review of existing literature, we will first implement a benchmark genetic algorithm covered in our literature review. Improvements to this algorithm will be explored sequentially and evaluated against the benchmark, before being compared to an equivalent classical algorithm. The findings are then summarised and discussed, before proposing further work on this topic.
+
+\color{black}
 
 \chapter{Literature Review}
 
@@ -113,8 +115,9 @@ As such, the problem can be stated as finding an optimal alignment of a set of r
 These algorithms will be reviewed in the following section:
 \begin{itemize}
 	\item \autoref{sec:classical_approaches} reviews pre-genetic algorithms (also known as `classical` algorithms)
+	\item \autoref{sec:hybrid_approaches} reviews hybrid algorithms which combine purely `classical` algorithms.
 	\item \autoref{sec:evo_approaches} reviews algorithms which utilise only evolutionary algorithms
-	\item \autoref{sec:hybrid_approaches} reviews hybrid algorithms which combine evolutionary and classical algorithms.
+	\item \autoref{sec:hybrid_ea_approaches} reviews hybrid algorithms which combine evolutionary and classical algorithms.
 \end{itemize}
 
 
@@ -127,7 +130,8 @@ These algorithms will be reviewed in the following section:
 \color{black}
 
 To bypass these issues, the algorithms aim to retrieve a robot's pose using two scans, each composed of 2d Cartesian or polar coordinates: the first of these is a reference scan of the environment, and the second is obtained from a Li-Dar scanner. These is achieved in either a local or global scope, using a variety of heuristic methods.
-\begin{figure}[t]
+
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=5cm,keepaspectratio]{images/pose_estimation.png}
 	\label{fig:pose_estimation}
@@ -136,17 +140,17 @@ To bypass these issues, the algorithms aim to retrieve a robot's pose using two 
 
 \subsection{Iterative Closest Point and variants}
 \label{subsec:ICP}
-The Iterative Closest Point algorithm (ICP) is one of the first, if not the fundamental starting point for the applications of heuristic algorithms to the matching of scanned data to environment maps within the context of indoor localisation.
+The Iterative Closest Point algorithm (ICP) is one of the first, if not the fundamental starting point for the applications of heuristic algorithms to the matching of scanned data to environment maps within the context of indoor localisation. \newline
 
-In this point-point data representation, the algorithm first detailed by \citet{Besl1992-pd} aims to find an optimal transformation to apply to the scan which minimises the sum of the distances measured of each scan-point to their closest point in the reference map. This can be pre-processed with the removal of points with no proximate matching point, and iteratively changing the solution tuple to minimise the error using the Newton or Lorentzian methods \cite{Munoz2005-gt}. Starting from an initial position and a scan of the environment from this position, the algorithm will converge to a local optimum alignment. 
+In this point-point data representation, the algorithm first detailed by \citet{Besl1992-pd} aims to find an optimal transformation to apply to the scan which minimises the sum of the distances measured of each scan-point to their closest point in the reference map. This can be pre-processed with the removal of points with no proximate matching point, and iteratively changing the solution tuple to minimise the error using the Newton or Lorentzian methods \cite{Munoz2005-gt}. Starting from an initial position and a scan of the environment from this position, the algorithm will converge to a local optimum alignment. \newline
 
-Many improvements have been suggested (20 736 variations according to \citet{Donoso2017-wp}), which aim to improve the convergence speed \cite{Donoso2017-wp} \cite{Simon1996-dl}, removal of points from the datasets which would reduce the optimality of the solution \cite{Weik1997-px} \cite{Masuda1996-av} or the precision metric used \cite{Eggert1997-ak}. As such it continues to be a strong area of research, and can prove to be an accurate and relatively quick solution to scan matching.
+Many improvements have been suggested (20 736 variations according to \citet{Donoso2017-wp}), which aim to improve the convergence speed \cite{Donoso2017-wp} \cite{Simon1996-dl}, removal of points from the datasets which would reduce the optimality of the solution \cite{Weik1997-px} \cite{Masuda1996-av} or the precision metric used \cite{Eggert1997-ak}. As such it continues to be a strong area of research, and can prove to be an accurate and relatively quick solution to scan matching.\newline
 
-However, ICP finds a local optimum from a hypothetical pose: this would inhibit the algorithm from finding a global position in a single run, and this is reflected by \citet{Censi2005-iv} who states that "any 'local' matcher can be (inefficiently) used for a global search". This could be implemented by randomising the starting pose over multiple runs, highlighting the additional complexity required to adapt this algorithm into a global search.
+However, ICP finds a local optimum from a hypothetical pose: this would inhibit the algorithm from finding a global position in a single run, and this is reflected by \citet{Censi2005-iv} who states that "any 'local' matcher can be (inefficiently) used for a global search". This could be implemented by randomising the starting pose over multiple runs, highlighting the additional complexity required to adapt this algorithm into a global search.\newline
 
-Nevertheless it continues to be an area of continuous research, as \citet{Minguez2006-nj} developed a version of ICP in 2006 named mbICP;  this accounts for the issue that the distance of a scanned point from the sensor will be proportional to the translation error of that point due to a rotational error. This would therefore skew the error of the hypothetical translation, potentially driving it away from a local error minima.
+Nevertheless it continues to be an area of continuous research, as \citet{Minguez2006-nj} developed a version of ICP in 2006 named mbICP;  this accounts for the issue that the distance of a scanned point from the sensor will be proportional to the translation error of that point due to a rotational error. This would therefore skew the error of the hypothetical translation, potentially driving it away from a local error minima.\newline
 
-Similarly,TrICP \cite{Chetverikov2005-yz} implements a Trimmed Least Squares \cite{Ruppert1980-js} algorithm rather than a Least Squares, improving the robustness to noise or poor initial estimations of the pose. This functions on a subset of points, thereby preventing erroneous measurements or outliers from affecting the overall regression. The algorithm is not pareto dominant to a standard ICP, as demonstrated by \citeauthor{Chetverikov2005-yz} through the examples in \autoref{fig:trICP_misalignment}; the TrICP algorithm was unable to align the M and P scans to form the correct R scan, whereas an ICP algorithm was able to achieve this result. 
+Similarly,TrICP \cite{Chetverikov2005-yz} implements a Trimmed Least Squares \cite{Ruppert1980-js} algorithm rather than a Least Squares, improving the robustness to noise or poor initial estimations of the pose. This functions on a subset of points, thereby preventing erroneous measurements or outliers from affecting the overall regression. The algorithm is not pareto dominant to a standard ICP, as demonstrated by \citeauthor{Chetverikov2005-yz} through the examples in \autoref{fig:trICP_misalignment}; the TrICP algorithm was unable to align the M and P scans to form the correct R scan, whereas an ICP algorithm was able to achieve this result. \newline
 
 
 \begin{figure}[t]
@@ -156,7 +160,7 @@ Similarly,TrICP \cite{Chetverikov2005-yz} implements a Trimmed Least Squares \ci
 	\label{fig:trICP_misalignment}
 \end{figure}
 
-Various forms of ICP therefore out-perform each other depending on the case at hand: \citet{Donoso2017-wp} recently published a comprehensive overview of 20,736 variants of the ICP algorithm in their ability to consolidate (and therefore place relative to each other) sets of 3 sets of 100 scans at distinct locations. These variants were generated by decomposing major ICP algorithms into their components (such as their point selection criteria, neighbourhood selection, point matching, etc), and creating new algorithms using every permutation of components. He finds that the performance (precision, accuracy and computational efficiency) of ICP variants can significantly vary depending on the scan and map data, and that no single algorithm was able to adequately solve all 3 scenes in the experiment. As such, the selection of a particular variant of ICP may be significant to the effectiveness of scan matching, as we will later discuss in \ref{sec:hybrid_approaches}.
+Various forms of ICP therefore out-perform each other depending on the case at hand: \citet{Donoso2017-wp} recently published a comprehensive overview of 20,736 variants of the ICP algorithm in their ability to consolidate (and therefore place relative to each other) sets of 3 sets of 100 scans at distinct locations. These variants were generated by decomposing major ICP algorithms into their components (such as their point selection criteria, neighbourhood selection, point matching, etc), and creating new algorithms using every permutation of components. He finds that the performance (precision, accuracy and computational efficiency) of ICP variants can significantly vary depending on the scan and map data, and that no single algorithm was able to adequately solve all 3 scenes in the experiment. As such, the selection of a particular variant of ICP may be significant to the effectiveness of scan matching, as we will later discuss in \ref{sec:hybrid_ea_approaches}.
 
 
 \subsection{Iterative Dual Correspondence}
@@ -203,17 +207,54 @@ The Cross correlation scan matching (CCSM) algorithm functions by using the set 
 \end{figure}
 
 \subsection{Hough Scan Matching}
+\label{subsec:hough}
 Hough Scan Matching relies on the creation of a function which produces a spectrum from a transformed set of points (using the Hough Transform) which has the following properties; it is invariant to input translations, and is circularly shifted on the input rotation. The search is therefore performed in a different domain which was created using an information-preserving transformation. The output of the scan and map sets can then be combined using a cross-correlation operator to retrieve the relative rotation. From there, a variety of other algorithms can retrieve the most likely translation given one or more candidate rotations; the method can therefore provide a ranked output of possible pose estimations. As presented by \citet{Censi2005-iv}, hough scan matching is therefore a potent, low-complexity approach to global indoor localisation. It may be particularly adaptable to a scan-to-map application as the spectrum of the map could be pre-computed, thereby reducing the processing time for repeated pose estimations.
 
 \subsection{Histogram scan matching}
 Histogram scan matching (HSM) was first detailed by \citet{Weiss1994-ub}. It functions by creating a histogram of the range of angles between points in a scan. By building graphs of the scan and map, we can obtain two comparable histograms with some degree of phase shift matching the relative pose rotation. Aligning the two histograms using maximas and minimas would allow the retrieval of candidate rotations. The process can then be repeated using histograms of the distances between points along the x and y axis, before being matched in a similar fashion. As such, the algorithm can determine the 3-tuple pose transformation in 3 consecutive $O(n)$ operations, greatly reducing the complexity of the algorithm relative to other methods. This resulted in a global search algorithm which was tested on relatively large rotations and transitions, but lacked any comparison to other algorithms: as such it is difficult to evaluate it's relative performance. HSM can however provide a global search with a low computational cost, that is resilient to noise.
 
+\color{red}
+\section{Hybrid algorithms}
+\label{sec:hybrid_approaches}
+Building on \citeauthor{Censi2005-iv}'s intuition concerning the application of local searches to global localisation ("any 'local' matcher can be (inefficiently) used for a global search" \cite{Censi2005-iv}), a new paradigm in the field of indoor localisation has emerged. These can be referred to as 'hybrid' algorithms, as they rely on the combination of a global search algorithm (such as the hough, branch and bound or genetic algorithms (see \autoref{sec:hybrid_ea_approaches})) to find an initial pose estimation, which is then refined using a local optimisation algorithm such as ICP. We should note that whilst both the algorithms explored in this section are relatively new, neither are compared to other paradigm leading algorithms such as the hybrid genetic algorithms discussed in \autoref{sec:hybrid_ea_approaches}.
+
+\subsection{Go-ICP}
+\label{subsec:go_icp}
+Although it is applied to a significantly more complex problem (the pose registration of 3d objects), \citet{Yang2013-gx} proposes a globally optimal hybrid algorithm (Go-ICP) allowing for the retrieval of a relative pose using a partial dataset. It functions using a pairing of the branch-and-bound algorithm (BnB) \cite{Land1960-yw} with the original ICP algorithm \cite{Besl1992-pd}. The algorithm functions by establishing an upper bound from a random point, which represents the current pose which best minimises the point-registration error (the sum of minimal distances between points paired across the scan and map datasets). Sections of the search space are recursively divided, and searches for a minimal pose within that space using the ICP algorithm. The optimised pose is then used as the upper bound against which candidate areas surrounding the current ones are searched by the next iteration of the algorithm. \newline
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=12cm,keepaspectratio]{images/BnBICP.png}
+	\caption[Combining Branch-and-Bound with ICP]{Left: Collaborative use of BnB \& ICP for global search and local optimisation. Right: ICP only explores un-discarded sub-sections of the map, as defined by BnB. Source: \citet{Yang2013-gx}}
+	\label{fig:bnb_icp}
+\end{figure}
+
+We can visualise this process in \autoref{fig:bnb_icp}, where the local optimisation is provided by the ICP, whilst global search through branch switching is provided by the BnB algorithm. This forces the ICP to search through only a section of the map, as detailed in the right hand side diagram. This iterative BnB search \& ICP optimisation is repeated until the convergence is achieved according to a specified metric, measured in either time or error threshold. \newline
+
+\citeauthor{Yang2013-gx} therefore demonstrates the feasibility of a global pose retrieval algorithm on 3D structures, and further demonstrates that it is robust to outliers in various experiments. Given the lack of a common test set for pose retrieval problems, it is difficult to validate the algorithm's performance against other global algorithms (such as those found in \autoref{sec:hybrid_ea_approaches}), and \citeauthor{Yang2013-gx} only provides a direct comparison to ICP. Whilst this demonstrates the global search characteristics of the Go-ICP algorithm, it's computational complexity and precision are difficult to evaluate due to the specificity of the test data and hardware; comparative evaluation against other global searches could demonstrate it as an extremely potent algorithm for 2d and 3d point registration nevertheless.
+ 
+\subsection{Hough-ICP}
+\label{subsec:hough_icp}
+
+\citet{Ma2016-es} propose a two-stage algorithm following the similar search-then-refine paradigm. This is composed of a Hough-transform based global search, followed by a pose refinement using ICP, resulting in an accurate global search method. Line features are first extracted from the hough transform of the map and scans, before being normalised through a form of K-means clustering. Normalised sets of lines for both the map and scan can then be matched using a measure of similarity (as only a difference in translation remains), allowing for the retrieval of a candidate pose from where we can run the ICP algorithm. \newline
+
+As with \autoref{subsec:go_icp}, \citeauthor{Ma2016-es} demonstrate the potency of the algorithm's global search capabilities against the original ICP algorithm, as highlighted by a lower localisation error. 
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=12cm,keepaspectratio]{images/hough_icp.png}
+	\caption[Hough-ICP localisation process]{A flowchart of the hough-ICP localisation process.}{Source: \citet{Ma2016-es}}
+	\label{fig:hough_icp_flowchart}
+\end{figure}
+
+\color{black}
+
 \section{Evolutionary Algorithms}
 \label{sec:evo_approaches}
 \subsection{Overview of genetic algorithms}
-Evolutionary algorithms (EAs) are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. 
+Evolutionary algorithms (EAs) are a type of meta-heuristic algorithms inspired from biological natural selection. As detailed by \citet{Whitley1994-tx}, evolutionary algorithms utilise a population of individuals, each with their own set of 'chromosomes' which would provide a solution to a given problem. These individuals are then evaluated against a stated fitness function, then selected by fitness using a competitive method which returns a 'fitter' subset of the population. This elite are then mutated to introduce a probability of improving their solution, and are crossed over with each other to share the benefits that they have inherited or mutated. This new population is then passed through the same process, and the process is repeated for a number of cycles, with each generation developing a fitter (and therefore better) solution to the given problem. \newline
 
-Evolutionary algorithms therefore form an alternative to the iterative improvement strategy found in the 'classical' methods previously discussed. This divergence is notable in two ways: firstly, a large number of alternative methods used to evaluate the resultant error from a transformation/rotation tuple can be adapted into the evolutionary algorithm's fitness function, and therefore the genetic algorithm could theoretically discover equivalently optimal minima in the fitness landscape. Secondly, as the initial population can be assigned to poses distributed around the map, and the random nature of a evolutionary algorithms allow individuals to progress against a fitness gradient through mutations and cross-overs, a global optima can be found. Evolutionary algorithms therefore allow many of the previously designed algorithms to be adapted into a solution to generically locate oneself in an environment with no prior knowledge of our displacement.
+Evolutionary algorithms therefore form an alternative to the iterative improvement strategy found in the 'classical' methods previously discussed. This divergence is notable in two ways: firstly, a large number of alternative methods used to evaluate the resultant error from a transformation/rotation tuple can be adapted into the evolutionary algorithm's fitness function, and therefore the genetic algorithm could theoretically discover equivalently optimal minima in the fitness landscape. Secondly, as the initial population can be assigned to poses distributed around the map, and the random nature of a evolutionary algorithms allow individuals to progress against a fitness gradient through mutations and cross-overs, a global optima can be found. Evolutionary algorithms therefore allow many of the previously designed algorithms to be adapted into a solution to generically locate oneself in an environment with no prior knowledge of our displacement.\newline
 
 The use genetic algorithms to search for data-matching was first proposed by \citet{Brunnstrom1996-vo} in \citeyear{Brunnstrom1996-vo}; this focused on the ability to find the correspondence between two detailed surface models. This was achieved by using a chromosome design based on a transformation, translation and rotation in three dimensions. As our scan matching only utilises 2-dimensional data, and temporarily ignoring the need for a transformation to handle noise, this chromosome design overcomplicates the application of scan matching in 2D indoor localisation. As such, the general chromosome design (without accounting for noise management) would simply consist of the 3-tuple previously detailed, composed of two transformations and a rotation.
 
@@ -227,14 +268,14 @@ Polar Scan matching (PSM) is a variation of \citeauthor{Robertson2002-ou}'s init
 The Genetic Lookup based Algorithm for Scan Matching (GLASM) \cite{Lenac2007-xm} is an improvement in the efficiency of the fitness function used in a GA for indoor localisation. This is achieved forming a discrete version of the map of the environment from a set of 2D coordinates into a look-up table. A regular grid is overlayed onto the map of the environment, with individual cells marked with a boolean 1 if one or more points lie within a threshold of the grid-space, and a 0 otherwise. The fitness of a translation can then be calculated by doing a direct lookup of each scan point in the grid to establish if a map point exists near that location. The sum of these points would then be maximised to achieve a minimal error of pose alignment. As such, GLASM is one of the first algorithms which would be extremely efficient for global localisation as the lookup table could be constructed once per map and used repeatedly during each iterative improvement or run. Furthermore, the lookup table reduces the complexity required to evaluate a pose from $O(n^2)$ with point-point matching into $O(n)$ for a single lookup per scan point. However, using a discrete search space would lead to a decrease in accuracy due to the resolution of the lookup grid. One should also mention the additional memory required to represent such a lookup table, although \citeauthor{Lenac2007-xm} provides an example $100\times100m$ grid with a resolution of 10cm and a $125kb$ memory requirement; this is negligible considering it could easily fit into the cache of a modern Intel Core i7 processor, or the RAM of an embedded system, and would therefore not greatly hamper the performance or push the memory limitations of a system. 
 
 \subsection{Dynamic Genetic Algorithm}
-The Dynamic Genetic Algorithm by \citet{Chow2004-xc} (DGA) aims to greatly improve the accuracy of a genetic algorithm. This is achieved by repeating the algorithm in a reduced search space based off the result of previous algorithm, with a reduced step size to allow a fine-tuning of the solution. The algorithm utilises a fitness function based on minimising the sum of the distances between each point in the scan and it's closest point in the map, using a fast nearest neighbour algorithm. This search space is determined based on the range of chromosomes of a 'converged' population from the previous iteration. However, if the population converged to a sub-optimal error minima, this resulted in an affine search for a non-global minima. As this was noticed by \citeauthor{Chow2004-xc}, a random sampling from the constricted environment and far-search environment allowed a balance between exploration and exploitation. In the event of a stagnation in fitness across multiple generations, the boundary could be further constricted to increase the likelihood of an improvement through chromosome mutation. 
+The Dynamic Genetic Algorithm by \citet{Chow2004-xc} (DGA) aims to greatly improve the accuracy of a genetic algorithm. This is achieved by repeating the algorithm in a reduced search space based off the result of previous algorithm, with a reduced step size to allow a fine-tuning of the solution. The algorithm utilises a fitness function based on minimising the sum of the distances between each point in the scan and it's closest point in the map, using a fast nearest neighbour algorithm. This search space is determined based on the range of chromosomes of a 'converged' population from the previous iteration. However, if the population converged to a sub-optimal error minima, this resulted in an affine search for a non-global minima. As this was noticed by \citeauthor{Chow2004-xc}, a random sampling from the constricted environment and far-search environment allowed a balance between exploration and exploitation. In the event of a stagnation in fitness across multiple generations, the boundary could be further constricted to increase the likelihood of an improvement through chromosome mutation. \newline
 
-This would be repeated until further boundary reduction yields no improvements in fitness, leading to an optimal solution. This algorithm was found to be effective to join parts of 3D models, with a 1000 times reduction in computational time compared to a standard GA; whilst further detail is omitted, this is most likely an improvement in the convergence rate of the algorithm, allowing it to halt in fewer generations. The improvement in computational time does strongly clash with the statistical results provided in Table 1. \cite{Chow2004-xc}. Using a simple independent T-test, we can find the dynamic GA to be significantly more precise ($p<0.0001, \triangle d = 10mm$), without requiring a significantly larger number of generations ($p=0.5445$), but with a significant increase in computational time ($p<0.001, \triangle s = 40$). DGAs are therefore more precise than a standard GA (in the given test conditions, which may not be generalisable), but may be less precise than an ICP algorithm which was pre-aligned. \citet{Lomonosov2006-vq} criticised the use of GAs as "faster and more precise iterative methods exist for registration of pre-aligned datasets"; as such, a hybrid algorithm such as those discussed in \ref{sec:hybrid_approaches} may produce equivalent results with less computational requirements.
+This would be repeated until further boundary reduction yields no improvements in fitness, leading to an optimal solution. This algorithm was found to be effective to join parts of 3D models, with a 1000 times reduction in computational time compared to a standard GA; whilst further detail is omitted, this is most likely an improvement in the convergence rate of the algorithm, allowing it to halt in fewer generations. The improvement in computational time does strongly clash with the statistical results provided in Table 1. \cite{Chow2004-xc}. Using a simple independent T-test, we can find the dynamic GA to be significantly more precise ($p<0.0001, \triangle d = 10mm$), without requiring a significantly larger number of generations ($p=0.5445$), but with a significant increase in computational time ($p<0.001, \triangle s = 40$). DGAs are therefore more precise than a standard GA (in the given test conditions, which may not be generalisable), but may be less precise than an ICP algorithm which was pre-aligned. \citet{Lomonosov2006-vq} criticised the use of GAs as "faster and more precise iterative methods exist for registration of pre-aligned datasets"; as such, a hybrid algorithm such as those discussed in \ref{sec:hybrid_ea_approaches} may produce equivalent results with less computational requirements.
 
-\section{Hybrid approaches}
-\label{sec:hybrid_approaches}
+\section{Hybrid evolutionary approaches}
+\label{sec:hybrid_ea_approaches}
 \subsection{GA \& ICP}
-The concept of combining the global search of a GA with the accuracy of the ICP algorithm has been introduced in a variety of concepts. \citet{Brunnstrom1996-vo} first proposed the idea of applying a low-accuracy global search using a GA, before refining the most promising individual poses using an ICP algorithm using the pre-aligned poses. Using a fitness function defined by minimising the sum of the distance between pairs of closest points (each pair composed of a point in the scan and a point in the map), \citeauthor{Brunnstrom1996-vo} presents an objective set of results demonstrating the algorithms ability to roughly estimate the 3-tuple pose modification, but produces no statistical data regarding the success rate or precision of the algorithm. 
+The concept of combining the global search of a GA with the accuracy of the ICP algorithm has been introduced in a variety of concepts. \citet{Brunnstrom1996-vo} first proposed the idea of applying a low-accuracy global search using a GA, before refining the most promising individual poses using an ICP algorithm using the pre-aligned poses. Using a fitness function defined by minimising the sum of the distance between pairs of closest points (each pair composed of a point in the scan and a point in the map), \citeauthor{Brunnstrom1996-vo} presents an objective set of results demonstrating the algorithms ability to roughly estimate the 3-tuple pose modification, but produces no statistical data regarding the success rate or precision of the algorithm. \newline
 
 The hybrid approach was independently presented by \citet{Martinez2006-ci}, resulting in a method which is indistinguishable from a standard GA, but is however quicker to execute as the GA search can be completed in a coarser accuracy, thereby reducing the computational costs sufficiently in spite of the ICP execution. This utilises a fitness function similar to the PSM discussed in \ref{subsec:psm}, thereby reducing the complexity of the fitness function to $O(n)$. When compared to a standard ICP and GA, the hybrid GA-ICP method performs as well as the GA and better than ICP, with a computation time between that of an ICP and GA. Whilst the significance of these results are limited by the lack of statistical analysis and the possible lack of generalisability of localisation algorithms, it is difficult to demonstrate this hybrid approach to be superior to other available methods. As such, further evaluation of the GA-ICP algorithm in a larger variety of environments would be required to find the strengths and weaknesses of the approach relative to differing environments. One should note these papers used a basic form of ICP, and as such were quickly improved upon as discussed below.
 
@@ -246,30 +287,35 @@ The hybrid approach was independently presented by \citet{Martinez2006-ci}, resu
 The Hybrid Genetic Lookup based Algorithm for Scan Matching (h-GLASM) by \citet{Lenac2011-co} is a combination of the mbICP algorithm with the fast lookup genetic algorithm. This aims to benefit from the global search provided by a genetic algorithm, the improvement in performance attained by the GLASM algorithm, and improve the accuracy of the final solution by executing an mbICP algorithm on a maximally pre-aligned pose. This results in a rapid, global search which is capable of producing an equal or higher success rate than a standard mbICP, but the precision of this algorithm is not evaluated or compared to other algorithms in the scope of its paper. As such it is difficult to consider its accuracy, although we could hypothesise that it is capable of a global search comparable to the GLASM algorithm, with the precision of the mbICP algorithm; this would make it the ideal starting point for further development of an indoor localisation system based on the use of a laser scanner and no prior pose information.
 
 \section{Summary}
-These paradigms illustrate the breadth of research in the area of indoor localisation. 'Classical' methods (ICP, IDP, classical PSM, PCA) continue to be developed and improved, resulting in algorithms which can quickly and accurately enhance odometric data, but generally lack a form of global search. Other classical methods search a modified space (PCA, Hough Scan Matching, Histogram Scan Matching), allowing them to produce global results, but their accuracy is rarely compared to local classical methods; this is due to the purpose of these algorithms, which is to locate oneself a global environment, rather than correct an existing pose. As such, a majority of these classical algorithms are unsuitable for localising a robot without any prior knowledge of the robot's pose.
+These paradigms illustrate the breadth of research in the area of indoor localisation. 'Classical' methods (ICP, IDP, classical PSM, PCA) continue to be developed and improved, resulting in algorithms which can quickly and accurately enhance odometric data, but generally lack a form of global search. Other classical methods search a modified space (PCA, Hough Scan Matching, Histogram Scan Matching), allowing them to produce global results, but their accuracy is rarely compared to local classical methods; this is due to the purpose of these algorithms, which is to locate oneself a global environment, rather than correct an existing pose. As such, a majority of these classical algorithms are unsuitable for localising a robot without any prior knowledge of the robot's pose. \newline
 
-The third paradigm involves using the searching potential of a genetic algorithm in combination with a fitness function mimicking the error function used in classical methods, providing a global search over the map. This allows GAs to obtain a rough estimate of the pose, which was unfeasible on a global scale using gradient ascent algorithms. However, these are unable to produce equally accurate results in comparison to classical methods, leading to the development of hybrid algorithms, where a classical algorithm provides the final gradient ascent from the GA's pose estimation to the local optima. As these provide the accuracy of a 'classical' method with the global search of a genetic algorithm, they are most suitable to the problem of global localisation in a known environment but no prior pose information. Developments in this area continue to integrate new classical methods (TrICP or mbICP) to improve the accuracy of the fine-tuning, or focus on optimising the performance of the genetic algorithm (GLASM). These algorithms remain difficult to utilise in realistic scenarios, as \citet{Chow2004-xc} require computation times above 60 seconds to register a pose, whilst \citet{Lenac2011-co}'s hybrid approach provides a quick and accurate but complex solution. 
+\color{red}
+The newer breed of hybrid algorithms detailed in \autoref{sec:hybrid_approaches} detail an adaptation of accurate local methods with global methods, most notably the use of a Branch-and-Bound algorithm and ICP (\citet{Yang2013-gx}). We should note that \citet{Yang2013-gx} provides an explicit solution to the avoidance of local minimas, allowing for a thorough global search using the branch and bound algorithm. Both methods detailed in this review demonstrate an impressive performance both in terms of precision and computational time, but fail to provide an adequate comparison with other algorithms over a similar test cases.  \newline
 
-The trade-off in accuracy, computational requirements and system complexity offer an area for improvement, which we will explore in \autoref{cha:system_design} where we aim to develop a simple, accurate and computationally cheap algorithm for use in robot pose localisation.
+
+\color{black}
+
+The third paradigm involves using the searching potential of a genetic algorithm in combination with a fitness function mimicking the error function used in classical methods, providing a global search over the map. This allows GAs to obtain a rough estimate of the pose, which was unfeasible on a global scale using gradient ascent algorithms. However, these are unable to produce equally accurate results in comparison to classical methods, leading to the development of hybrid algorithms, where a classical algorithm provides the final gradient ascent from the GA's pose estimation to the local optima. As these provide the accuracy of a 'classical' method with the global search of a genetic algorithm, they are most suitable to the problem of global localisation in a known environment but no prior pose information. Developments in this area continue to integrate new classical methods (TrICP or mbICP) to improve the accuracy of the fine-tuning, or focus on optimising the performance of the genetic algorithm (GLASM). These algorithms remain difficult to utilise in realistic scenarios, as \citet{Chow2004-xc} require computation times above 60 seconds to register a pose, whilst \citet{Lenac2011-co}'s hybrid approach provides a quick and accurate but complex solution. \newline
+
+The trade-off in accuracy, computational requirements and system complexity offer an area for improvements in the current non-hybrid GA algorithms, which we will explore in \autoref{cha:system_design} where we aim to develop a simple, accurate and computationally cheap algorithm for use in robot pose localisation. Our proposed optimisation will be compared to a benchmark GA, in addition to hybrid algorithm utilising one or more `classical` algorithms; this will allow us to evaluate the performance and practicality of our algorithm relative to other GAs, and to provide a contrast of GAs with non-GA algorithms which are capable of global localisation.
 
 
 \chapter{Algorithm evaluation methodology}
 \label{cha:system_design}
 
-
 % TODO cite Player-Stage
 \section{Test data}
-The data used to evaluate our algorithms is taken from \citet{Lenac2011-co}, where a robot's exploration of a room was simulated using the Player-Stage software. This produced a series of scan scenarios, each composed of a verifiable scan pose (x, y, rotation) and polar scan coordinates (distance, rotation): these coordinates mimics the data format obtained from a Li-Dar scanner. The map of the environment (into which our algorithm will locate itself) was created from these scans by computing the absolute position of each scan point, before compiling them into a single set of Cartesian data. This was achieved using a Python script \lstinline{combiner.py} 
+The data used to evaluate our algorithms is taken from \citet{Lenac2011-co}, where a robot's exploration of a room was simulated using the Player-Stage software. This produced a series of scan scenarios, each composed of a verifiable scan pose (x, y, rotation) and polar scan coordinates (distance, rotation): these coordinates mimics the data format obtained from a Li-Dar scanner. The map of the environment (into which our algorithm will locate itself) was created from these scans by computing the absolute position of each scan point, before compiling them into a single set of Cartesian data. This was achieved using a Python script \lstinline{combiner.py} \newline
 
 % [TODO RENAME COMBINER.PY TO SOMETHING MORE REASONABLE).
 
-This tool also allowed for the sub-sampling of data such that the fitness function of complexity $O(m\times n)$  (where m, n are the number of points in the map and scan) could be executed in reasonable time. This was implemented by randomly removing one of two points if they are closer than a certain value, allowing us to reduce computational requirements without losing map features. This is visible in \autoref{fig:map_density}, which displays the map data sub-sampled to various degrees. The middle chart (with tolerance 0.2) was selected as an ideal trade-off between computational time and presence of features.
+This tool also allowed for the sub-sampling of data such that the fitness function of complexity $O(m\times n)$  (where m, n are the number of points in the map and scan) could be executed in reasonable time. This was implemented by randomly removing one of two points if they are closer than a certain value, allowing us to reduce computational requirements without losing map features. This is visible in \autoref{fig:map_density}, which displays the map data sub-sampled to various degrees. The middle chart (with tolerance 0.2) was selected as an ideal trade-off between computational time and presence of features. \newline
 
-The algorithms were each ran 30 times using the same scan (scan110) and map, over a range of time limitations; these restricted the number of generations for which the algorithm evolved, thereby providing a comparison of the algorithms over a set of possible requirements (which could be constricted by the application, available processing power, etc). Paired T-Tests could then be conducted across the average efficiency, categorised into buckets by real execution time. No values were excluded as outliers  as we wish aim to create a consistent system in spite of the stochastic nature of genetic algorithms.
+The algorithms were each ran 30 times using the same scan (scan110) and map, over a range of time limitations; these restricted the number of generations for which the algorithm evolved, thereby providing a comparison of the algorithms over a set of possible requirements (which could be constricted by the application, available processing power, etc). Paired T-Tests could then be conducted across the average efficiency, categorised into buckets by real execution time. No values were excluded as outliers  as we wish aim to create a consistent system in spite of the stochastic nature of genetic algorithms. \newline
 
-We should note that the data utilised had no specified scale: this can be estimated using the specifications of an off-the-shelf Li-Dar range finder \cite{noauthor_undated-bu}. Assuming the robot in our dataset had an equivalent range of 40 meters, the longest distance measured in the data is approximately 6; this can be established as the maximal range of the sensor as the scans do not form complete loops (i.e: if a scan was attempted towards a further point, no data is returned at that angle). Therefore the virtual unit utilised throughout this project is equivalent to approximately 6.6 meters. 
+We should note that the data utilised had no specified scale: this can be estimated using the specifications of an off-the-shelf Li-Dar range finder \cite{noauthor_undated-bu}. Assuming the robot in our dataset had an equivalent range of 40 meters, the longest distance measured in the data is approximately 6; this can be established as the maximal range of the sensor as the scans do not form complete loops (i.e: if a scan was attempted towards a further point, no data is returned at that angle). Therefore the virtual unit utilised throughout this project is equivalent to approximately 6.6 meters. \newline
 
-\begin{figure}
+\begin{figure}[ht]
 \begin{subfigure}[b]{0.30\textwidth}
 	\resizebox{\linewidth}{!}{
 		\begin{tikzpicture}{1cm}
@@ -304,7 +350,7 @@ We should note that the data utilised had no specified scale: this can be estima
 \label{fig:map_density}
 \end{figure}
 
-A single scan was utilised throughout the design of the algorithm to facilitate the quick evaluation of solutions, and was picked due to the presence of multiple corners pointing to the scan location: this would cause some complexity in the algorithm's ability to correctly select the rotation in a difficult environment. This would provide some robustness of the algorithm to repeated patterns, but remained a non-exhaustive test case.
+A single scan was utilised throughout the design of the algorithm to facilitate the quick evaluation of solutions, and was picked due to the presence of multiple corners pointing to the scan location: this would cause some complexity in the algorithm's ability to correctly select the rotation in a difficult environment. This would provide some robustness of the algorithm to repeated patterns, but remained a non-exhaustive test case. \newline
 
 \begin{figure}
 \begin{subfigure}[b]{0.3\textwidth}
@@ -333,9 +379,12 @@ A single scan was utilised throughout the design of the algorithm to facilitate 
 The algorithms were evaluated on the York Advanced Research Compute Cluster, which provides job-based dedicated processing nodes for each execution of the algorithm. This allowed the rapid evaluation of each algorithm and the ability to brute force the algorithm's parameters given our test data. Additionally, the implementation of the cluster allows us to reliably measure the execution time of our algorithms, thereby allowing us to evaluate their practicability for real-world applications.
 
 \section{Solution evaluation}
-We define a combined error metric $E=d_{hp}\times |R_h-R_r|$, where $d_hp$ is the absolute distance between each estimated pose, and $R_h, R_p$ are the respective rotations from North of the hypothetical and reference pose. As such, a smaller error represents a more accurate pose. This allows the outputs of our algorithms to be evaluated independently from their fitness functions, and therefore allow us to compare output poses.
+\label{sec:sol_eval}
+We define a combined error metric $E=d_{hp}\times |R_h-R_r|$, where $d_hp$ is the absolute distance between each estimated pose, and $R_h, R_p$ are the respective rotations from North of the hypothetical and reference pose. As such, a smaller error represents a more accurate pose. This allows the outputs of our algorithms to be evaluated independently from their fitness functions, and therefore allow us to compare output poses. \newline
 
-As we are only searching for a single pose, we will only consider the best individual from each run's final generation as the output of an algorithm. These form the set of results for each algorithm which will be evaluated using statistics appropriate to individual experiments. 
+As we are only searching for a single pose, we will only consider the best individual from each run's final generation as the output of an algorithm. These form the set of results for each algorithm which will be evaluated using statistics appropriate to individual experiments. \newline
+
+An additional measure of efficiency is defined as the product of the combined error and the execution time of the algorithm, thereby allowing quicker algorithms to be comparable to various scales of GAs.
 
 \chapter{Benchmark algorithm}
 \section{Algorithm summary}
@@ -343,7 +392,7 @@ An existing GA by \citet{Robertson2002-ou} was adapted as a benchmark algorithm 
 
 \section{Fitness function}
 \label{sec:fitness_landscape}
-The fitness function utilised by \citet{Robertson2002-ou} is a minimisation of the sum of the minimal distance of every point in the scan to its closest point in the reference map: $E = \sum_i |S_i-M_I|$ where S is a $(x,y)$ point in the scan and M is S's closest point in the map. This was altered for our benchmark algorithm; a function maximisation problem was defined instead, using $M = \frac{1}{1+E}$ as our new fitness function. This provides a more accentuated curve of fitness in the hope of improving the convergence capabilities of both the benchmark and new algorithm, in addition to adhering to the standard for GA's established by \citet{Eiben2015-de}.
+The fitness function utilised by \citet{Robertson2002-ou} is a minimisation of the sum of the minimal distance of every point in the scan to its closest point in the reference map: $E = \sum_i |S_i-M_I|$ where S is a $(x,y)$ point in the scan and M is S's closest point in the map. This was altered for our benchmark algorithm; a function maximisation problem was defined instead, using $M = \frac{1}{1+E}$ as our new fitness function. This provides a more accentuated curve of fitness in the hope of improving the convergence capabilities of both the benchmark and new algorithm, in addition to adhering to the standard for GA's established by \citet{Eiben2015-de}. \newline
 
 To ensure the fitness function's global maxima matches our scan location, the function was evaluated across a set of poses which blanket the map. The maximal fitness value at a given X/Y coordinate (across all tested rotations) was graphed in the charts below, demonstrating that the algorithm's peaks roughly matches the target pose for that scan (given the resolution of the set of poses); this demonstrates that the algorithm's fitness will be proportional to the pose's precision, and therefore should allow the GA to evolve towards the correct pose. This is visualised in \autoref{fig:landscape_overlay}, where scan110 was evaluated at various poses and angles, and the maximal fitness for any rotation at a position (x,y) was plotted. The presence of a single clear global optima across various scans in the dataset is demonstrated in \autoref{fig:landscapes}, where the same method was applied to a variety of other scans; these further demonstrate the matching of the scan's pose with the global maxima of the fitness landscape. 
 
@@ -395,7 +444,7 @@ As expected, allowing the algorithm to evolve a larger population with/or for a 
 
 \subsection{Mutation \& Crossover}
 \label{subsec:benchmark_mutpb_cxpb}
-The mutation and crossover probabilities for our benchmark were found using 60 pose estimations of scan110, our map, and the benchmark algorithm with each combination of parameters across a range, as seen in \autoref{fig:ga_cxpb_mutpb}. This high sample number was done to ensure the robustness of the solution, as an initial 30 executions demonstrated no significant variations in performance across the range of parameter combinations. 
+The mutation and crossover probabilities for our benchmark were found using 60 pose estimations of scan110, our map, and the benchmark algorithm with each combination of parameters across a range, as seen in \autoref{fig:ga_cxpb_mutpb}. This high sample number was done to ensure the robustness of the solution, as an initial 30 executions demonstrated no significant variations in performance across the range of parameter combinations. \newline
 
 \begin{figure}[ht]
 \centering
@@ -409,11 +458,9 @@ The mutation and crossover probabilities for our benchmark were found using 60 p
 
 \subsection{Mutation size}
 
-\pgfplotstableread[col sep=comma]{data/benchmark/mutsize.csv}\datatablebenchmarkmutsize
-
-
-
 The size of the mutation was defined as a random sample from a normal distribution with $\mu=0, \sigma=1.0$; this was deemed to provide a balance between the frequency in small mutations (to adequately refine the final pose) and larger mutations (to increase the convergence rate of the pose from the initial pose). The near-optimality of this distribution for our test scan (scan 110) was verified by running the algorithm using previously defined parameters and a varying mutation size, as visible in \autoref{fig:benchmark_mutsize}.
+
+\pgfplotstableread[col sep=comma]{data/benchmark/mutsize.csv}\datatablebenchmarkmutsize
 
 \begin{figure}[ht]
 	\centering
@@ -456,11 +503,11 @@ The algorithm aims to achieve the goals defined here through a series of indepen
 
 \section{Elitism selection}
 \label{subsec:elitism_sel}
-As seen in the 3D charts of the fitness landscapes seen in \autoref{fig:landscape_overlay}, the fitness of our solutions evolve in a smooth landscape, generally with a significantly larger global maxima. We hypothesised that this would allow us to utilise highly convergent forms of GAs; this was on the assumption that our population was large enough to place one or more individuals in an area such that the individual's local maxima was the global maxima. This individual would then be more likely to have a higher fitness than the rest of the population (due to the smooth fitness landscape), and therefore a high rate of duplication and mutation would enable an evolution towards the global maxima. The concept is built on \citet{David_E_Goldberg1991-es}'s solution to balancing the conflict between exploration and exploitation through higher growth ratios followed by building block discovery through mutation; we however diverge from this by instead utilising mutation to optimise our current local maxima (i.e: block) and assume our initial population was sufficiently dense and spread across the map to find all local maximas.
+As seen in the 3D charts of the fitness landscapes seen in \autoref{fig:landscape_overlay}, the fitness of our solutions evolve in a smooth landscape, generally with a significantly larger global maxima. We hypothesised that this would allow us to utilise highly convergent forms of GAs; this was on the assumption that our population was large enough to place one or more individuals in an area such that the individual's local maxima was the global maxima. This individual would then be more likely to have a higher fitness than the rest of the population (due to the smooth fitness landscape), and therefore a high rate of duplication and mutation would enable an evolution towards the global maxima. The concept is built on \citet{David_E_Goldberg1991-es}'s solution to balancing the conflict between exploration and exploitation through higher growth ratios followed by building block discovery through mutation; we however diverge from this by instead utilising mutation to optimise our current local maxima (i.e: block) and assume our initial population was sufficiently dense and spread across the map to find all local maximas. \newline
 	
-This represented a form of elitism, where the top n percentile of the population was retained at each generation and duplicated into offspring, which increase the genetic diversity via crossover or mutation according to a set probability. \citet{T_Back_D_B_Fogel_T_Michalewicz} and \citet{Shapiro1992-qm} describe an accurately similar algorithm known as the $(\mu + \lambda)$  algorithm.
+This represented a form of elitism, where the top $n$ percentile of the population was retained at each generation and duplicated into offspring, which increase the genetic diversity via crossover or mutation according to a set probability. \citet{T_Back_D_B_Fogel_T_Michalewicz} and \citet{Shapiro1992-qm} describe an accurately similar algorithm known as the $(\mu + \lambda)$  algorithm. \newline
 
-As with our benchmark algorithm, parameters of the $(\mu + \lambda)$ algorithm were refined using a series of short experiments; these are described in the following sections.
+As with our benchmark algorithm, parameters of the $(\mu + \lambda)$ algorithm were refined using a series of short experiments; these are described in the following sections. \newline
 
 The computational complexity of a fitness-ranked sorting method (quick-sort in $O(n log (n))$) is more complex  \cite{Mitchell1998-td} than that of a tournament selection $(O(n))$ \cite{David_E_Goldberg1991-es}; given the small population size (50) this results in a negligible difference in computational time. This may become an issue when locating in larger maps, which may require larger populations to adequately sample the space for local maximas, but this issue will be secondary to the evaluation time required for each individual.
 
@@ -469,7 +516,6 @@ The computational complexity of a fitness-ranked sorting method (quick-sort in $
 As with the benchmark algorithms, near-optimal crossover and mutation rates were found by evaluating combinations of these parameters in range [0, 1]. Valid combinations are restricted according to $mutpb + cxpb <= 1$, which produces the correct number of offspring at each generation. These combinations were evaluated 30 times each over 50 generations, with a population of 50 individuals and an elitism of 0.8 (that is, the top 80\% of the population are carried over into the next generation and used to produce the next generation's remaining population as offspring). The experiment was initially conducted using scan110, which we deem to be sufficient as the crossover and mutation rates of the individuals are used in our algorithm to provide pose refinement rather than increase the breadth of search; as maps can be expected to have a smooth peak (as seen in the fitness landscapes in \autoref{sec:fitness_landscape}), the mutation and crossover rates are expected to be near-optimal for most scans in the map. To increase our confidence in this assumption, an equivalent search was conducted on a randomly selected scan (scan64) as seen in \autoref{fig:ga_elite_cxpb_mutpb_exec_time}.
 
 % FROM elitism/CXPB_ga_elite.xslx
-% TODO fix labels on graphs (cxpb 110 should have mutation on X, crossover on Y)
 \begin{figure}
 \begin{subfigure}[b]{0.5\textwidth}
 	\resizebox{\linewidth}{!}{
@@ -490,7 +536,7 @@ This resulted in \autoref{fig:ga_elite_cxpb_mutpb_exec_time}, which demonstrates
 
 \subsection{Elitism rate}
 \label{subsec:elite_elitism_rate}
-Corresponding elitism rates were selected using another exhaustive search from $0 <= n <= 1$, where n represents the top percentage of candidate poses which are kept for the next generation. This feature would affect the trade-off between the breadth of search (as does the population size), and the speed of convergence of the algorithm (as worse solutions are more rapidly removed from the population). We expect the optimised elitism rate to be strongly affected by the smoothness of the fitness landscape: maps with multiple peaks in fitness (i.e: a scan strongly matches multiple features in the map) may require a slower convergence to ensure they find the global maxima, whilst a faster convergence rate (by selecting fewer individuals at each generation) could allow poses in smoother maps to be quickly found. In order to find an optimised elitism rate, 30 evaluations of the algorithm with varying elitism rates were ran using Scan110 and our reference map, in addition to the previously established mutation and crossover rates.
+Corresponding elitism rates were selected using another exhaustive search from $0 <= n <= 1$, where n represents the top percentage of candidate poses which are kept for the next generation. This feature would affect the trade-off between the breadth of search (as does the population size), and the speed of convergence of the algorithm (as worse solutions are more rapidly removed from the population). We expect the optimised elitism rate to be strongly affected by the smoothness of the fitness landscape: maps with multiple peaks in fitness (i.e: a scan strongly matches multiple features in the map) may require a slower convergence to ensure they find the global maxima, whilst a faster convergence rate (by selecting fewer individuals at each generation) could allow poses in smoother maps to be quickly found. In order to find an optimised elitism rate, 30 evaluations of the algorithm with varying elitism rates were ran using Scan110 and our reference map, in addition to the previously established mutation and crossover rates. \newline
 
 % from elite_sweep_110(latest)
 \begin{figure}
@@ -503,8 +549,8 @@ Corresponding elitism rates were selected using another exhaustive search from $
 	        ylabel = {Combined error},
 	        xmin = 0,
 	        ymin=0,
-	        xmax=1.05,
-	        ymax=14,
+	        xmax=1,
+	        ymax=15.5,
 	        grid=both,
 	        xlabel = {Proportion of top individuals selected.},
 	        legend pos=north east,
@@ -538,7 +584,7 @@ As we can see in the figure above, there appears to be an optima at 0.95 (95\% o
 	\centering
 	\begin{tikzpicture}
 	    \begin{axis}[
-	        xtick=data,
+	        % xtick=data,
 	        % xticklabels from table={\datatableelitemutsize}{mutsize},
 	        xticklabel style={rotate=45},
 	        width  = \textwidth,
@@ -582,12 +628,12 @@ The algorithm was first compared to a benchmark using an equal population size a
 
 \subsubsection{Equal execution time}
 \label{subsec:ga_vs_elite_time_sweep}
-Further to the previous experiment, the code was modified to loosely constrain the available execution time; this functioned by halting the algorithm if, at the end of a generation, the elapsed time was larger than a specified threshold. As the subsequent results had unequal execution times, the results were weighed according to their execution time, such that the statistics were ran on values representing the product of the execution time and combined error. A lower value is therefore preferable as it indicates the algorithm was either more precise than the other given a certain computational time, required less computational time to produce an equally precise result, or a combination of the two. 
+Further to the previous experiment, the code was modified to loosely constrain the available execution time; this functioned by halting the algorithm if, at the end of a generation, the elapsed time was larger than a specified threshold. As the subsequent results had unequal execution times, the results were weighed according to their execution time, such that the statistics were ran on values representing the product of the execution time and combined error. A lower value is therefore preferable as it indicates the algorithm was either more precise than the other given a certain computational time, required less computational time to produce an equally precise result, or a combination of the two. \newline
 
 This produced the data visible in \autoref{fig:ga_vs_elite_box_whiskers}; as we can see, the elite algorithm produces more efficient results across the set of target execution times. This is most visible by the comparatively low median (0.550 against 12.960), along with a more efficient upper quartile (2.110 against 82.407). This demonstrates that the elite algorithm produces consistently more efficient solutions than the benchmark algorithm. It does however either take an excessively long period of time or produces poor results, as demonstrated by the large whiskers (this is addressed in \autoref{subsec:grid_based_feature}).
 
 
-% TODO Change scale of X axis to make box plots visible, or add table with median and quartiles
+% TODO  add table with median and quartiles
 % From elitism/elite-vs_ga
 \begin{figure}
 	\begin{tikzpicture}
@@ -619,7 +665,7 @@ This produced the data visible in \autoref{fig:ga_vs_elite_box_whiskers}; as we 
 	\label{fig:ga_vs_elite_box_whiskers}
 \end{figure}
 
-These results can be further analysed in \autoref{fig:ga_vs_elite_bucket}, where the results are grouped into buckets of execution time. A bucket-paired T-Test demonstrates the results from the elite algorithm are statistically more efficient (i.e: execution time $\times$ combined error is lower) per execution time (means of 23.622 vs 100.865, p<0.001, N=360). This is not the case for all time limits; benchmark runs limited to 5-10s are not significantly more efficient (23.724 average combined error $\times$ execution time) than the elite algorithm (26.231). This may be due to the benchmark's use of crossovers to rapidly explore areas of the map which are not yet populated; an equivalent breadth of search is not available in our algorithm due to the small mutation sizes and lack of crossover, which we will address in our next feature in \autoref{subsec:grid_based_feature}. 
+These results can be further analysed in \autoref{fig:ga_vs_elite_bucket}, where the results are grouped into buckets of execution time. A bucket-paired T-Test demonstrates the results from the elite algorithm are statistically more efficient (i.e: execution time $\times$ combined error is lower) per execution time (means of 23.622 vs 100.865, p<0.001, N=360). This is not the case for all time limits; benchmark runs limited to 5-10s are not significantly more efficient (23.724 average combined error $\times$ execution time) than the elite algorithm (26.231). This may be due to the benchmark's use of crossovers to rapidly explore areas of the map which are not yet populated; an equivalent breadth of search is not available in our algorithm due to the small mutation sizes and lack of crossover, which we will address in our next feature in \autoref{subsec:grid_based_feature}. \newline
 
 We can also notice that the precision per time unit seems to increase as we provide the elite algorithm with additional time, leading to an exponential decrease in error. In contrast, the benchmark algorithm appears to follow a constant efficiency. 
 
@@ -674,15 +720,15 @@ We can also notice that the precision per time unit seems to increase as we prov
 	\label{fig:ga_vs_elite_bucket}
 \end{figure}
 
-As demonstrated in \autoref{subsec:ga_vs_elite_time_sweep}, fitness-rank based selection is capable of rapidly selecting promising individuals, duplicating them and mutating their offspring to find an optima near them. This results in an algorithm which is more efficient in a majority of time scales, but can still fail to produce a precise pose given an arbitrary amount of computational time (as demonstrated by the larger upper whisker in \autoref{fig:ga_vs_elite_box_whiskers}). This may be due to the stochastic nature of the genetic algorithms, or more particularly the population initialisation. 
+As demonstrated in \autoref{subsec:ga_vs_elite_time_sweep}, fitness-rank based selection is capable of rapidly selecting promising individuals, duplicating them and mutating their offspring to find an optima near them. This results in an algorithm which is more efficient in a majority of time scales, but can still fail to produce a precise pose given an arbitrary amount of computational time (as demonstrated by the larger upper whisker in \autoref{fig:ga_vs_elite_box_whiskers}). This may be due to the stochastic nature of the genetic algorithms, or more particularly the population initialisation. \newline
 
 Whilst the benchmark algorithm has an equally large worst case, we can hypothesise that this is due to the inability of the algorithm to evolve it's poses with sufficient precision. In contrast, the elite algorithm's duplication and mutation of individuals increases the number of local explorations around existing individuals, but is incapable of evaluating areas which were not populated by the initial population. This has led to the development of a grid-based initial population, as detailed in \autoref{subsec:grid_based_feature}.
 
 \subsection{Grid-based initial population}
 \label{subsec:grid_based_feature}
- As previously stated, rank-based selection of individuals causes the algorithm to be unable to explore areas which were not sampled in the initial population. It would be possible to increase the probability of sampling every area in the map by increasing the population size, but this would lead to a larger execution time as a certain number of generations may still be required to sufficiently refine the position of an individual via duplication and mutation, even if the required displacement is reduced by the increased population density.
+ As previously stated, rank-based selection of individuals causes the algorithm to be unable to explore areas which were not sampled in the initial population. It would be possible to increase the probability of sampling every area in the map by increasing the population size, but this would lead to a larger execution time as a certain number of generations may still be required to sufficiently refine the position of an individual via duplication and mutation, even if the required displacement is reduced by the increased population density. \newline
 
- In order to provide an adequate breadth of search without a large computational overhead, we utilised a simple algorithm to place a set number of individuals in a map at a constant density; this is visible by the red dots in \autoref{fig:grid_init} which represent individuals in the map. This enabled the algorithm to initially evaluate a larger number of 'candidate' individuals, of which 50 are selected and mutated to begin the previous evolution; this action forms the first generation of our algorithm. Subsequent generations are the same as in the non-grid algorithm. 
+ In order to provide an adequate breadth of search without a large computational overhead, we utilised a simple algorithm to place a set number of individuals in a map at a constant density; this is visible by the red dots in \autoref{fig:grid_init} which represent individuals in the map. This enabled the algorithm to initially evaluate a larger number of 'candidate' individuals, of which 50 are selected and mutated to begin the previous evolution; this action forms the first generation of our algorithm. Subsequent generations are the same as in the non-grid algorithm. \newline
 
 \begin{figure}
 \centering
@@ -745,7 +791,7 @@ The effects of pre-arranging a larger population were evaluated using the same m
 	\label{fig:grid_vs_elit}
 \end{figure}
 
-Using the same TTest (paired across bucketed real execution time) we found the mean efficiency to be statistically lower for grid-initialised algorithms (with a larger initial population which is later reduced) as opposed to standard initialisations (average execution time $\times$ error of 2.26 vs 69.00, p<0.001, N=360). This is likely due to a reduction in the number of algorithm failures, where no adequate pose was found within the time limit. This can be seen in \autoref{fig:grid_vs_rand_stdev}, where the standard deviations for each execution time group are generally lower for grid-based initialisation than the standard algorithm. This is found to be statistically significant for two thirds of the groups using an F-Test (p<0.001), therefore demonstrating that grid-based initialisations greatly increase the precision of the algorithm. We should note that optimal grid density or parameters were not explored for the map or scan, and it could therefore be possible to further accentuate the effect of this method on the output pose.
+Using the same TTest (paired across bucketed real execution time) we found the mean efficiency to be statistically lower for grid-initialised algorithms (with a larger initial population which is later reduced) as opposed to standard initialisations (average execution time $\times$ error of 2.26 vs 69.00, p<0.001, N=360). This is likely due to a reduction in the number of algorithm failures, where no adequate pose was found within the time limit. This can be seen in \autoref{fig:grid_vs_rand_stdev}, where the standard deviations for each execution time group are generally lower for grid-based initialisation than the standard algorithm. This is found to be statistically significant for two thirds of the groups using an F-Test (p<0.001), therefore demonstrating that grid-based initialisations greatly increase the precision of the algorithm. We should note that optimal grid density or parameters were not explored for the map or scan, and it could therefore be possible to further accentuate the effect of this method on the output pose.\newline
 
 \pgfplotstableread[col sep=comma]{data/rand_vs_grid/stdev.csv}\datatablegridstdev
 
@@ -774,10 +820,10 @@ Using the same TTest (paired across bucketed real execution time) we found the m
 	\label{fig:grid_vs_rand_stdev}
 \end{figure}
 
-We should additionally note that while the feature was envisioned using a grid-like pattern, the use of a larger initial population which is randomly distributed around the map does achieve similarly distinct results when compared to the elitist algorithm. This was validated over 30 runs of the algorithm, which produced a mean result (in execution time $\times$ combined error) of 3.74 across all execution time buckets, compared to the grid-based algorithm's mean of 2.255. A paired T-test across execution time buckets does confirm it is not significantly worse than a grid-based initialisation (N=360, p=0.295).
+We should additionally note that while the feature was envisioned using a grid-like pattern, the use of a larger initial population which is randomly distributed around the map does achieve similarly distinct results when compared to the elitist algorithm. This was validated over 30 runs of the algorithm, which produced a mean result (in execution time $\times$ combined error) of 3.74 across all execution time buckets, compared to the grid-based algorithm's mean of 2.255. A paired T-test across execution time buckets does confirm it is not significantly worse than a grid-based initialisation (N=360, p=0.295). \newline
 
 
-% TODO verify boxplot data for 
+% From Elite/ELite_Rand_vs_grid.xlsx
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}
@@ -818,19 +864,33 @@ We should additionally note that while the feature was envisioned using a grid-l
 	\label{fig:ga_vs_elite_vs_grid_box_whiskers}
 \end{figure}
 
-As such, 'primed' populations of individuals are hugely beneficial to the evolution of a pose through elitism selection, as they increase the probability that an individual will be placed in a position from which it would crawl (via mutation and duplication) towards the global maxima. This addition further contributes to improving the consistency of pose retrieval, as well as reducing the worst case pose, as demonstrated by the compact box plot representing the Grid algorithm's results in \autoref{fig:ga_vs_elite_vs_grid_box_whiskers}.
+As such, 'primed' populations of individuals are hugely beneficial to the evolution of a pose through elitism selection, as they increase the probability that an individual will be placed in a position from which it would crawl (via mutation and duplication) towards the global maxima. This addition further contributes to improving the consistency of pose retrieval, as well as reducing the worst case pose, as demonstrated by the compact box plot representing the Grid algorithm's results in \autoref{fig:ga_vs_elite_vs_grid_box_whiskers}. \newline
 
 
+\color{red}
+We have therefore demonstrated that optimisations are possible for purely genetic localisation algorithms, improving the precision, computational requirements and consistency of our localisation within a map. However, the obtained algorithm has essentially been reduced away from a volatile genetic algorithm, which benefits from crossover to explore a large map with little computational power. In it's place, we have created an algorithm which relies on finding a reasonable initial pose estimation through a sparse brute force, before refining it through repeated mutation to ascend the fitness gradient. As the mutation has a likelihood of approximately 50 \% of being counter-productive (as it can move the individual towards or away from the optima), it stands out as a significant inefficiency in the algorithm, leading us to a necessary comparison with a gradient ascent algorithm, which we will design and evaluate in \autoref{cha:icp_algorithm}.
 
 
-% TODO move to section prior to evaluation, improve description of ICP algorithm
+\color{black}
+
 \chapter{ICP algorithm design \& evaluation}
-\label{subsec:icp_benchmark}
-An ICP algorithm \cite{Harry_undated-ea} was adapted for use with our grid-layout algorithm. It functioned by running 20 iterations of the ICP algorithm from 200 hypothetical poses laid across a grid on the map. The pose with the lowest error is then selected using the same error function used in the fitness metric for the GA's. This was executed 360 times to create a set of data comparable to the grid-based algorithm's dataset (which was created using 30 runs over 12 target durations), which was illustrated in \autoref{fig:icp_vs_grid_box_whiskers}. 
+\label{cha:icp_algorithm}
 
-As we can see, the global-ICP has a similar median to the grid-based initialisation (medians: Grid = 0.73, ICP = 1.33), but is much more consistent; this is demonstrated by the standard deviation (Grid = 68.63, ICP = 7.760). A paired T-Test across ICP's pose error $\times$ execution time results and the equivalent results from the range of executions of the grid-initialised algorithms found the means to be significantly different (N=360, p<0.001), indicating that the global ICP algorithm is indeed more efficient. In addition, a paired T-Test on the combined pose error (regardless of execution time) found the mean of the ICP algorithm's output to be significantly lower than that of the grid algorithm (N=360, p<0.01, means: Grid = 16.95, ICP = 1.204). 
+\color{red}
+Given the lack of comparison between genetic algorithm and recent classical algorithms, an additional experiment was undertaken to help situate our optimised GA in the field of localising algorithms. Following \citet{Yang2013-gx}'s implementation of a Branch-and-Bound \& ICP algorithm, an ICP implementation \cite{Harry_undated-ea} was adapted for use with our grid-layout algorithm. This aimed to form a representative algorithm from the non-genetic research accrued thus far, although preliminary results signified that further optimisation was not required to demonstrate the obvious benefits of this approach.
 
-Compounding this information with the fact the longest global-ICP execution required 6.7 seconds (mean of 3.66, compared to 38.195s for the grid-initialised elitist algorithm) in contrast to  demonstrates that even an extremely basic and unrefined adaptation of a classic localisation algorithm could out-perform a GA (the classic algorithm could be further improved by fine tuning the density of the initial grid, or utilising an improved version of ICP such as mbICP or trICP).
+\section{Description}
+The algorithm functioned by applying the ICP algorithm from 200 hypothetical poses laid across a grid on the map, using the same grid pattern and density as our optimised GA. The previously defined combined error metric (see \autoref{sec:sol_eval}) is then used to select the final pose estimation from the set of ICP-refined candidate poses. The refinement of candidate poses were executed in parallel using the same compute cluster as in our grid-based approach in \autoref{subsec:grid_based_feature}. \newline
+
+The algorithm was ran 360 times to create a dataset of comparable size to the grid-based algorithm's dataset (which was created using 30 runs over 12 target durations); the result of this can be seen in \autoref{fig:icp_vs_grid_box_whiskers}. 
+
+
+\color{black}
+
+\section{Evaluation against Grid-based GA}
+As we can see, the grid-ICP has a similar median efficiency (defined as Combined error $\times$ execution time) grid-based initialisation (medians: Grid-GA= 0.73, Grid-ICP = 1.33), but is much more consistent; this is demonstrated by the standard deviation (Grid-GA= 68.63, Grid-sICP = 7.760). A paired T-Test across the ICP's pose error $\times$ execution time results and the equivalent results from the range of executions of the grid-initialised algorithms found the means to be significantly different (N=360, p<0, means: Grid-ICP: 4.35, Grid: 2.247), indicating that the GA based algorithm is indeed more efficient. \newline
+
+Compounding this information with the fact the longest grid-ICP execution required 6.7 seconds (mean of 3.66, compared to 38.195s for the grid-initialised elitist algorithm) in contrast to  demonstrates that even an extremely basic and unrefined adaptation of a classic localisation algorithm could provide slightly less accurate but considerably more consistent results than a GA (the classic algorithm could be further improved by increasing the density of the initial grid, implementing a more efficient candidate selection from the initial grid such as a Branch-and-Bound algorithm, or utilising an improved version of ICP such as mbICP or trICP).
 
 We will explore the reasons behind this gap in \autoref{sec:algorithm_limitations}.
 
@@ -839,7 +899,7 @@ We will explore the reasons behind this gap in \autoref{sec:algorithm_limitation
 \begin{figure}
 	\begin{tikzpicture}
 		\begin{axis}
-		[height=4cm, width=\textwidth, ytick={1,2, 3}, yticklabels={Grid, global-ICP}, xlabel={Combined error $\times$ execution time}, xmode=log]
+		[height=4cm, width=\textwidth, ytick={1,2, 3}, yticklabels={Grid-GA, Grid-ICP}, xlabel={Combined error $\times$ execution time}, xmode=log]
 
 		\addplot+[
 			boxplot prepared={
@@ -862,7 +922,7 @@ We will explore the reasons behind this gap in \autoref{sec:algorithm_limitation
 		] coordinates {};
 		\end{axis}
 	\end{tikzpicture}
-	\caption[Global-ICP performance against Grid Initialisation] {Performance of each algorithm over 30 executions for 12 time limits (note: x axis is logarithmic)}
+	\caption[Grid-ICP performance against Grid-Initialised GA] {Performance of each algorithm over 30 executions for 12 time limits (note: x axis is logarithmic)}
 	\label{fig:icp_vs_grid_box_whiskers}
 \end{figure}
 
@@ -878,15 +938,11 @@ As summarised in \autoref{fig:ga_vs_elite_bucket}, our first experiment showed t
 \section{Grid-based initial populations}
 The grid-initialisation aimed to improve the global search of the elitist algorithm without significantly increasing the computational requirements of the algorithm. This was achieved by using a larger initial population of candidate poses, evenly distributed over the map. Following a single generation with this larger population, the subsequent evolution took place on the 50 best individuals from that generation (as selected by the fitness function). This resulted in an improved precision, as it increased the likelihood of an individual in the initial population being placed within close proximity of a global maxima (towards which it can mutate). In combination with a small increase in computational time, this lead to a more efficient algorithm across all execution times (as visible in \autoref{fig:grid_vs_elit}). We can safely assume that this would require slightly more memory, due to the increased codebase and larger initial population; this may impede it's implementation in resource-limited systems. 
 
-As previously cited in \autoref{subsec:ICP}, \citet{Censi2005-iv} states that it would be possible to apply a 'classical' algorithm to a global pose localisation problem by running it from a number of random poses. This would rely on the assumption that one of these random poses has a local maxima which is the global maxima; that is, it will be capable of using gradient ascent to refine it's pose, similarly to the methodology implemented by grid-based initialisation. However, ICP remains an extremely efficient algorithm, whilst the mutation-based refinement of a genetic algorithm is more similar to a random walk than a hill climbing algorithm. We have therefore opted to create a basic implementation of an ICP-based algorithm to demonstrate this.
 
-
-% TODO DISCUSS GRID-ICP
-
-
-
-
-
+\section{Grid-ICP algorithm}
+\color{red}
+As discussed \autoref{subsec:ICP}, \citet{Censi2005-iv} states that it would be possible to apply a 'classical' algorithm to a global pose localisation problem by running it from a number of random poses. This would rely on the assumption that one of these random poses has a local maxima which is the global maxima; that is, it will be capable of using gradient ascent to refine it's pose, similarly to the methodology implemented by grid-based initialisation. However, ICP remains an extremely efficient algorithm, whilst the mutation-based refinement of a genetic algorithm is more similar to a random walk than a hill climbing algorithm. We opted to demonstrate this using a un-optimised algorithm, as seen in \autoref{cha:icp_algorithm}, where a grid of candidate poses were individually refined using the ICP algorithm. This demonstrated that, given the current scan and map data, pose estimations equivalent to our optimised GA could be obtained using an extremely crude global search followed by an efficient hill climber. Given this finding, we will first explore limitations of the GAs and Grid-ICP algorithms implemented in this project (see \autoref{sec:algorithm_limitations}, before exploring the appropriateness of both solutions to other test cases.
+\color{black}
 
 \section{Limitations of the algorithm}
 \label{sec:algorithm_limitations}
@@ -894,7 +950,7 @@ A number of issues could cause the under-performance of the genetic algorithms; 
 
 \subsection{Fitness function}
 \label{subsec:criticism_fitness_func}
-The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_peaks} illustrate a high-granularity visualisation of the fitness functions observed in \autoref{fig:landscape_overlay} for scan110, demonstrating that the peak of the fitness function does not match the expected pose provided by the Player-Stage model used in \citet{Lenac2011-co}(-2.184327, 2.641909). Instead, a peak further to the north west is indicated by the concentric circles forming a summit. Therefore, we can assume a translation error is due to individuals being caused by the fitness function. This occurs across all 3 sampled tolerance sizes, suggesting it may be specific to this map, scan and pose.
+The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_peaks} illustrate a high-granularity visualisation of the fitness functions observed in \autoref{fig:landscape_overlay} for scan110, demonstrating that the peak of the fitness function does not match the expected pose provided by the Player-Stage model used in \citet{Lenac2011-co}(-2.184327, 2.641909). Instead, a peak further to the north west is indicated by the concentric circles forming a summit. Therefore, we can assume a translation error is due to individuals being caused by the fitness function. This occurs across all 3 sampled tolerance sizes, suggesting it may be specific to this map, scan and pose. \newline
 
 \begin{figure}
 \begin{subfigure}[b]{0.3\textwidth}
@@ -919,28 +975,119 @@ The fitness function may be a source of some inaccuracy. \autoref{fig:landscape_
 We hypothesise that this effect may be due to a coincidence in the data, such that a slight rotation and placement of the scan-points within a solid wall (surrounded by map points) would allow a higher fitness to occur. This could be detected by identifying continuous loops of points in a map, and penalising the placement of points within these 'solids' (accounting for some possible sensor error).
 
 \subsection{Limitations of methodology}
-The methodology used to optimise each algorithm in this report relies on the independence of parameters, relative to their effect on the algorithm's performance. This was the chosen method for practical reasons, but research in meta-genomic by \citet{Brain2011-pz} suggests that it could be possible to use a genetic algorithm to optimise our GAs for a given set of scans and a map. This would improve the convergence speed of the candidate solutions, thereby reducing the computational time required to run the algorithm; this does not however form a practical solution due to the stochastic nature of genetic algorithms, as many runs of the localisation algorithm would be necessary to effectively evolve adequate parameters. 
+The methodology used to optimise each algorithm in this report relies on the independence of parameters, relative to their effect on the algorithm's performance. This was the chosen method for practical reasons, but research in meta-genomic by \citet{Brain2011-pz} suggests that it could be possible to use a genetic algorithm to optimise our GAs for a given set of scans and a map. This would improve the convergence speed of the candidate solutions, thereby reducing the computational time required to run the algorithm; this does not however form a practical solution due to the stochastic nature of genetic algorithms, as many runs of the localisation algorithm would be necessary to effectively evolve adequate parameters. \newline
 
-A common criticism for papers related to localisation considers the lack of diversity in the set of test scans and maps; this is difficult to define (we later suggest the definition of a metric to help define maps in \autoref{sec:further_work}), demonstrating that it would be a difficult criticism to solve in a concise fashion. In addition, optimising a genetic algorithm for multiple maps/scans may prove to make it practically ineffective for any of the test cases, if the parameters required were incompatible. Therefore, multiple analyses across a set of varied maps would be an adequate improvement to our understanding of the robustness and limitations of each algorithm.
+A common criticism for papers related to localisation considers the lack of diversity in the set of test scans and maps; this is difficult to define (we later suggest the definition of a metric to help define maps in \autoref{sec:conclusion}), demonstrating that it would be a difficult criticism to solve in a concise fashion. In addition, optimising a genetic algorithm for multiple maps/scans may prove to make it practically ineffective for any of the test cases, if the parameters required were incompatible. Therefore, multiple analyses across a set of varied maps would be an adequate improvement to our understanding of the robustness and limitations of each algorithm.
 
 \subsection{Robustness to map topology}
 \label{subsec:robustness_to_map_topology}
-The issue of improperly mapped fitness functions (see \autoref{subsec:criticism_fitness_func}) does bring to light another significant assumption of our algorithm: the existence of a smooth global optima. This assumption allows consecutive small random mutations to 'crawl' an individual towards the global optima, thereby refining the pose. The same assumption also allows ICP to have an extremely high success rate, depending on the presence of a hypothetical pose which has a local maxima that is the map's global maxima. 
 
-As demonstrated in our landscapes in \autoref{sec:fitness_landscape}, this does not appear to be the case for our test scans and maps. However, if exploring a repeated environment where features occur with slight variations (for example offices with desks, cabinets, walls), both the ICP-based algorithm and grid-pattern algorithm may converge to an incorrect maxima; depending on the density of the initial grid and the location of individuals within the local topology of the maxima. The inability to create fully new individuals through large mutations or crossovers would prevent either algorithm from searching unexplored areas.
+\color{red}
+The issue of improperly mapped fitness functions (see \autoref{subsec:criticism_fitness_func}) does bring to light another significant assumption of our algorithm: the existence of a smooth global fitness landscape. This assumption allows consecutive small random mutations to 'crawl' towards the global optima, thereby refining the pose. The same assumption also allows ICP to have an extremely high success rate, depending on the presence of a hypothetical pose which has a local maxima that is the map's global maxima. \newline
 
-The applicability of GA's to the problem of indoor localisation can then be subdivided into two cases. This follows intuition by \citet{Mitchell1998-td}; who considers the appropriateness of GAs to specific problems in relation to conventional 'weak' methods (which do not use domain-specific knowledge in their search procedure). \citeauthor{Mitchell1998-td} details that GA's are most applicable in non-smooth, non-unimodal search spaces; these would exist in the context of indoor localisation as feature-dense reference maps. However, if the search space isn't feature dense but does contain multiple peaks, it could be explored using the grid-based elitist GA, or the more efficient ICP-based algorithm in \autoref{subsec:icp_benchmark}. If available computational performance or memory are restricted, utilising the algorithms put forward by \citet{Robertson2002-ou} or \citet{Lenac2007-xm} would most likely 
+As demonstrated in our landscapes in \autoref{sec:fitness_landscape}, this is the case for our test scans and maps. However, if exploring a repeated environment where features occur with slight variations (for example offices with desks, cabinets, walls), both the Grid-ICP algorithm and grid-pattern algorithm may converge to an incorrect maxima; depending on the density of the initial grid and the location of individuals within the local topology of the maxima. The inability to later explore local maximas which are not sampled in the initial population through large mutations or crossovers would prevent either algorithm from searching unexplored areas. \newline
 
-When locating in smooth environments, the designed grid-based system provides a more efficient form of GA-based pose retrieval than our benchmark, but was demonstrated to be extremely inefficient compared to a basic global-ICP algorithm. However, as the environment becomes feature-dense (increasing the number of peaks in the fitness landscape) or large, these methods will require more memory and computational power (owing to the grid-initialisation), whereas the algorithms put forward by \citet{Robertson2002-ou} or \citet{Lenac2007-xm} may find a pose given a smaller memory usage but a larger computational time. 
+Therefore, we could hypothesise that feature dense search spaces with associated mountainous fitness landscapes could be better explored by more volatile implementations of GAs, such as the algorithms proposed by \citet{Robertson2002-ou} or \citet{Lenac2007-xm}, with additional refinement using a classical algorithm (as proposed by \citet{Lenac2011-co}). Such maps could be caused by either having a poorly featured scan dataset (due to low sensor range relative to map size). This would require significant increases in computational power, and therefore potentially impractical computational time for safety-critical use cases.
 
-As summarised by \citet{Mitchell1998-td}, the applicability of GA's depends greatly on the implementation's details, such as parameter settings and success criterion; the performance of the GA's may vary considerably, as demonstrated by the exhaustive parameter optimisations performed throughout this project. Whilst we have investigated the application of elitist selection and population priming to the problem of indoor localisation, it is important to note that the benefits provided by these design decisions do not benefit all possible cases.
+\section{Comparison between GAs and Grid-ICP}
 
-\section{Further work}
-\label{sec:further_work}
-As discussed in \autoref{subsec:robustness_to_map_topology}, variations in map topologies can cause some algorithms to solve the indoor localisation problem more efficiently than others. Defining a metric for a map which could determine which algorithm to utilise may be of value in applications; this could be related to the feature density, map size, similarity in repeated map features or other unexplored characteristics of maps. 
+As we have discussed in \autoref{subsec:robustness_to_map_topology}, our optimised GA is most appropriate for the current test case given the smoothness of the fitness landscape. In doing so, we have also detailed (in \autoref{cha:icp_algorithm}) that the reliance on a smooth landscape highlights the inefficiency of our optimised GA, and have demonstrated this by creating a crude Grid-ICP algorithm which could outperform the GA in our test scenario. Given the lack of comparison between leading GA and recent classical approaches, this questions the appropriateness of GAs for the problem of indoor localisation. \newline
+
+The applicability of GA's to the problem of indoor localisation can be subdivided into two cases. The first of these was explored in this report, where a sparsely featured map created a smooth fitness landscape. Whilst we have demonstrated that improvements can be made to existing GAs, equally efficient results can be obtained from a crude Grid-ICP algorithm, demonstrating the lack of efficiency in pose refinement of the GA. In addition to this, the removal of some stochastic behaviour from the GA's initialisation allowed for a reduced worst case pose estimation, and a more consistent accuracy.  \newline
+
+The second case, which would contrast greatly with our experiment, would consist of a densely featured map, resulting in an erratic fitness landscape.
+\citet{Mitchell1998-td} details that GA's are most applicable in non-smooth, non-unimodal search spaces; we would expect these to exist in the context of indoor localisation as feature-dense reference maps. However, given the error metric used to define our fitness landscape, this would amount to finer-grain equivalent of the experiment detailed in this report; this should not present a problem for the grid-based algorithms discussed here, assuming a sufficiently high grid density was available to ensure an individual was placed within the scope of the global maxima. Given the parameter fine-tuning required to achieve effective pose estimations using GA, this brings into question the applicability of GAs to the field of indoor localisation; both the Grid-ICP and Grid-GA algorithms would require a dense population (or a smaller population and longer evolution time) to achieve an adequate initial coverage, but the final refinement of the pose would inevitably be more efficient through a hill-climbing algorithm than random walking. \newline
+
+As stated by \citet{Grefenstette2012-ir}, "If [a search] space is well understood and contains structure that can be exploited by special purpose search techniques, the use of genetic algorithms is generally computationally less efficient". Given the full knowledge of the map and scan data, and the relative ease with which we can construct a fitness landscape relating the two, we can see that genetic algorithms may not be the best approach to solve the problem of indoor localisation. \newline
+
+We can hypothesise that this may be due to the nature of genetic algorithms: a highly ranked individual (as per the fitness function) will be reproduced in the next generation is valuable to the overall refinement of the solution if he is closer to the global optima than a majority of other candidate solutions. If this individual is on a hill with a gradient directed towards  the global maxima, reproducing it using random mutations cannot be more efficient than ascending the gradient from that individual's position. The only situation in which a hill climber would mislead the progress of the algorithm from the individual's is if the pose's local maxima is not the global maxima, which may occur in repeated environments. This is illustrated in \autoref{fig:conclusion_graph}, where the idealised scans and maps from \autoref{fig:conclusion_experiment} are evaluated across a range of translations along the X axis, demonstrating a secondary maxima in the fitness landscape. The ability of a GA to escape from this local minima through crossovers or abnormally large mutations is it's key benefit compared to hill climbers, at the cost of being incapable of refining the final pose with sufficient precision.\newline
+
+\pgfplotstableread[col sep=comma]{data/conclusion/refmap.csv}\datatableconclusionmap
+\pgfplotstableread[col sep=comma]{data/conclusion/scan.csv}\datatableconclusionscan
+
+% TODO maybe make Y axis log scale?
+\begin{figure*}
+        \begin{subfigure}[b]{0.475\textwidth}
+			\begin{tikzpicture}
+			    \begin{axis}[
+			        width  = 8cm,
+			        height = 6cm,
+			        ylabel = {Y},
+			        xlabel = {X},
+			        ymin=0,
+			        ymax=6,
+			        xmin=0,
+			        xmax=8
+			    ]
+			    \addplot+table [scatter, only marks, col sep=comma, x=x, y=y] {\datatableconclusionmap};
+			    \addlegendentry{Map}
+
+			    \addplot [scatter, only marks, mark=+, mark size=5pt] coordinates {(4.5,1.5)};
+			    \addlegendentry{Robot pose}
+			    \end{axis}
+			\end{tikzpicture}
+			\caption{Reference map}
+			\label{fig:conclusion_map}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.475\textwidth}  
+			\begin{tikzpicture}
+			    \begin{axis}[
+			        width  = 8cm,
+			        height = 6cm,
+			        xlabel = {X},
+			        ymin=0,
+			        ymax=6,
+			        xmin=0,
+			        xmax=8
+			    ]
+			    \addplot+ table [scatter, only marks, col sep=comma, x=x, y=y] {\datatableconclusionscan};
+			    \addlegendentry{Scan points}
+			    \end{axis}
+			\end{tikzpicture}
+			\caption{Scan points}
+			\label{fig:conclusion_scan}   
+        \end{subfigure}
+		\caption{Example of a local minimas in repeated environments}
+		\label{fig:conclusion_experiment}  
+\end{figure*}
+
+
+\pgfplotstableread[col sep=comma]{data/conclusion/graph.csv}\datatableconclusion
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+	    \begin{axis}[
+	        width  = \textwidth,
+	        height = 5cm,
+	        ylabel = {Fitness},
+	        xlabel = {Translation along X axis},
+	        ymin=0,
+	        xmin=-1,
+	        xmax=4
+	    ]
+	    \addplot+table [col sep=comma, x=xpos, y=error] {\datatableconclusion};
+	    \end{axis}
+	\end{tikzpicture}
+	\caption[Pose fitness over local minimas]{Pose fitness when translated along X axis}
+	\label{fig:conclusion_graph}
+\end{figure}
+
+This strongly resembles the case illustrated by \citeauthor{Yang2013-gx} (see \autoref{subsec:go_icp}), who demonstrates a non-genetic approach to escaping local minimas through the branch and bound algorithm. However, without an adequate comparison between the Go-ICP algorithm and any genetic algorithms, it is difficult to determine whether either is better fitted to the problem of indoor localisation. \newline
+
+The lack of comparison between novel algorithms remains a fundamental issue amongst almost all publications in this area. In it's place, most new algorithms are compared to ICP (as is the case for \cite{Lenac2007-xm}, \cite{Lomonosov2006-vq} \& \cite{Yang2013-gx}), providing comparatively impressive results due to the inability of ICP to conduct a global search, but resulting in two branches of the field bearing no direct comparison with each other (genetic algorithms \cite{Lenac2007-xm} \cite{Lenac2011-co} \cite{Ze-Su2007-li} and novel hybrid classical algorithms \cite{Yang2013-gx} \cite{Ma2016-es}).  \newline
+
+In addition to this, the lack of a specification for a thorough test set which could demonstrate the robustness of an algorithm to real world applications severely limits the significance with which algorithms can be deemed dominant over others. \newline
+
+\section{Conclusion \& Further work}
+\label{sec:conclusion}
+Following our experiments with the application of genetic and non-genetic algorithms to the problem of localisation via cloud point matching, we have demonstrated that numerous optimisations to genetic algorithms can significantly improve the performance of these algorithms, both in their accuracy and computational requirements. We have also demonstrated key weaknesses in the application of these optimised GAs through a comparative evaluation with a novel hybrid algorithm. We can conclude that it may not be possible to optimally apply a single algorithm to all cases of the indoor localisation problem due to variations in map topologies, as discussed in \autoref{subsec:robustness_to_map_topology}.  Defining a metric for a map which could determine which algorithm to utilise may be of value in applications; this could be related to the feature density, map size, similarity in repeated map features or other unexplored characteristics of maps. This could be achieved using exploratory landscape analysis, as discussed in \citet{Mitchell1992-fl} and more recently \citet{Mersmann2011-jm}. \newline
 
 Further to this, the definition of a formal, thorough set of test scans and reference maps (which could be categorised in accordance with the aforementioned metric) could allow for a better understanding of the relative performance of algorithms, as the current research generally fails to use sufficiently varied test cases to provide a robust evaluation and comparison of algorithms.
 
+
+\color{black}
 \clearpage
 \bibliographystyle{unsrt}
 \bibliography{references}
