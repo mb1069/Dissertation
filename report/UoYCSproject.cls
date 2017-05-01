@@ -118,8 +118,7 @@
                {wordcount not set}
                {Declare the word count in the preamble using \protect\wordcount{Numeral}.} %
   \else
-    Number of words = \UoYCSP@wordcount, as counted by
-    \textsf{wc~-w}.
+    Number of words = \UoYCSP@wordcount.
   \fi
 
   This includes the body of the report%
@@ -140,6 +139,7 @@
 \let\endold@abstract\endabstract
 \renewcommand{\abstract}[1]{\newcommand{\UoYCSP@abstract}{#1}}
 \renewcommand{\endabstract}{}
+
 
 \let\old@dedication\dedication
 \newcommand*{\UoYCSP@dedication}{}
